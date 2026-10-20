@@ -1,0 +1,5 @@
+@import "tailwindcss";
+@import "@javaabu/onu/tailwind.css";
+@import "@javaabu/onu/fonts.css";
+/* The playground renders the source, so let Tailwind scan it. */
+@source "../../src";
