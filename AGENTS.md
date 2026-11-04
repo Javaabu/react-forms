@@ -25,7 +25,7 @@
 
 ```bash
 pnpm install
-pnpm lint && pnpm format:check && pnpm typecheck
+pnpm check   # lint, format, typecheck, test, build, examples: run before every push
 pnpm test
 pnpm build
 pnpm examples

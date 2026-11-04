@@ -6,6 +6,9 @@
 /** Field errors keyed by field name in Laravel's dot notation (`items.0.name`). */
 export type FormErrors = Record<string, string[] | string | undefined>
 
+/** Errors of a page: the default bag's fields, and named bags (`{ email: "…", createUser: { name: "…" } }`). */
+export type PageErrors = Record<string, string[] | string | FormErrors | undefined>
+
 /** Laravel's 422 response body: `{ message, errors: { "items.0.name": ["…"] } }`. */
 export interface ValidationPayload {
   message?: string

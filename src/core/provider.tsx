@@ -3,7 +3,7 @@
 import * as React from "react"
 
 import type { FormsAdapter, FormsComponents, FormsServices } from "./adapter"
-import type { FormErrors } from "./errors"
+import type { PageErrors } from "./errors"
 import type { FormsRouter } from "./router"
 import { html } from "../adapters/html"
 
@@ -39,7 +39,7 @@ export interface FormsConfig {
    * Validation errors for every form, keyed by field (`{ email: ["…"] }`) or by error bag
    * (`{ createUser: { email: "…" } }`). A form's `errors` prop wins. The Inertia router reads page props itself.
    */
-  errors?: FormErrors | Record<string, FormErrors> | null
+  errors?: PageErrors | null
   /** Resolves `can` / `arg` / `guard` props. Without it, `can` checks fail closed. */
   authorize?: Authorize
   /** Values for `get_setting()` lookups. */
@@ -54,7 +54,7 @@ export interface FormsContextValue {
   translate?: (text: string) => string
   csrfToken?: string | null
   old: Record<string, unknown> | null
-  errors: FormErrors | Record<string, FormErrors> | null
+  errors: PageErrors | null
   authorize?: Authorize
   settings: FormsSettings
 }

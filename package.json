@@ -90,7 +90,8 @@
     "changeset": "changeset",
     "release": "pnpm build && changeset publish",
     "examples": "vite --config examples/vite.config.ts",
-    "examples:build": "vite build --config examples/vite.config.ts"
+    "examples:build": "vite build --config examples/vite.config.ts",
+    "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test && pnpm build && pnpm examples:build"
   },
   "peerDependencies": {
     "@javaabu/onu": "^0.2.1",

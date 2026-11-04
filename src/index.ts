@@ -42,6 +42,7 @@ export {
   toDotNotation,
   focusFirstInvalid,
   type FormErrors,
+  type PageErrors,
   type ValidationPayload,
 } from "./core/errors"
 export { useFormState, useFieldErrors, type FormState, type FormStatus } from "./core/form-context"
