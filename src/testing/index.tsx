@@ -355,6 +355,50 @@ export function adapterConformance(
       },
     },
     {
+      name: "Tabs keep inactive panels mounted and open the tab of an invalid field",
+      run: async () => {
+        const { container } = mount(
+          <Form errors={{ phone: "The phone field is required." }} summary={false}>
+            <Tabs tabs={[{ name: "general" }, { name: "contact" }]}>
+              <TabsPane name="general">
+                <Text name="name" default="ޢަލީ" />
+              </TabsPane>
+              <TabsPane name="contact">
+                <Text name="phone" />
+              </TabsPane>
+            </Tabs>
+          </Form>,
+        )
+        equal(formData(container).get("name"), "ޢަލީ", "a field in the active tab")
+        const phone = container.querySelector('[name="phone"]')
+        check(phone, "fields in inactive tabs must stay mounted, so they submit")
+        await waitFor(() => {
+          const panel = phone.closest('[role="tabpanel"]')
+          const shown = !phone.closest("[hidden]") && panel?.getAttribute("data-state") !== "inactive"
+          check(shown, "the tab with the invalid field must open (listen for forms:reveal)")
+        })
+      },
+    },
+    {
+      name: "Accordions keep closed items mounted and open the item of an invalid field",
+      run: async () => {
+        const { container } = mount(
+          <Form errors={{ notes: "Add a note." }} summary={false}>
+            <Accordion id="more" items={[{ title: "More", content: <Textarea name="notes" /> }]} />
+          </Form>,
+        )
+        const notes = container.querySelector('[name="notes"]')
+        check(notes, "fields in closed accordion items must stay mounted, so they submit")
+        await waitFor(() => {
+          const shown =
+            !notes.closest("[hidden]") &&
+            !notes.closest('[data-state="closed"]') &&
+            !notes.closest("details:not([open])")
+          check(shown, "the item with the invalid field must open (listen for forms:reveal)")
+        })
+      },
+    },
+    {
       name: "Table renders headings, rows with checkboxes and cells",
       run: () => {
         const { container } = mount(

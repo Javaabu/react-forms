@@ -43,6 +43,7 @@ import {
 } from "../../core/adapter"
 import { useUi } from "../../core/provider"
 import { useRemoteOptions } from "../../core/remote"
+import { TabPanel, useReveal } from "../../core/reveal"
 import { useFormsTranslation } from "../../core/strings"
 import { thaanaKeyDown } from "../../core/thaana"
 
@@ -754,6 +755,16 @@ const cardPart = (slot: string) =>
     return <div data-slot={slot} {...props} />
   }
 
+function AccordionBody({ id, onReveal, children }: { id: string; onReveal: () => void; children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  useReveal(ref, onReveal)
+  return (
+    <div ref={ref} id={id}>
+      {children}
+    </div>
+  )
+}
+
 function Accordion({ id, items, defaultValue, multiple, className }: AccordionSlotProps) {
   const [open, setOpen] = React.useState<string[]>(defaultValue)
   return (
@@ -773,7 +784,16 @@ function Accordion({ id, items, defaultValue, multiple, className }: AccordionSl
           }}
         >
           <summary aria-disabled={item.disabled || undefined}>{item.title}</summary>
-          <div id={item.value}>{item.content}</div>
+          <AccordionBody
+            id={item.value}
+            onReveal={() =>
+              setOpen((current) =>
+                current.includes(item.value) ? current : multiple ? [...current, item.value] : [item.value],
+              )
+            }
+          >
+            {item.content}
+          </AccordionBody>
         </details>
       ))}
     </div>
@@ -809,43 +829,13 @@ function Tabs({ items, defaultValue, onValueChange, className }: TabsSlotProps) 
         <TabPanel
           key={item.value}
           id={`${baseId}-${item.value}`}
-          hidden={active !== item.value}
+          aria-labelledby={`${baseId}-${item.value}-tab`}
+          active={active === item.value}
           onReveal={() => select(item.value)}
         >
           {item.content}
         </TabPanel>
       ))}
-    </div>
-  )
-}
-
-/** A tab panel that opens when a field inside asks to be revealed (errors focus it). */
-function TabPanel({
-  id,
-  hidden,
-  onReveal,
-  children,
-}: {
-  id: string
-  hidden: boolean
-  onReveal: () => void
-  children: React.ReactNode
-}) {
-  const ref = React.useRef<HTMLDivElement>(null)
-  const reveal = React.useRef(onReveal)
-  React.useEffect(() => {
-    reveal.current = onReveal
-  })
-  React.useEffect(() => {
-    const node = ref.current
-    if (!node) return
-    const listener = () => reveal.current()
-    node.addEventListener("forms:reveal", listener)
-    return () => node.removeEventListener("forms:reveal", listener)
-  }, [])
-  return (
-    <div ref={ref} role="tabpanel" id={id} aria-labelledby={`${id}-tab`} hidden={hidden}>
-      {children}
     </div>
   )
 }

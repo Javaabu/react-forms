@@ -191,6 +191,15 @@ function focusTarget(el: HTMLElement): HTMLElement {
  * first (it re-renders), focus follows on the next frames. Returns `true`
  * when focus moved or is scheduled.
  */
+/** Inside something that hides it: `[hidden]`, a closed `<details>`, or a closed / inactive panel. */
+function concealed(el: HTMLElement): boolean {
+  if (el.hidden) return true
+  // From the parent up: a closed select trigger has `data-state="closed"` itself.
+  return !!el.parentElement?.closest(
+    '[hidden], details:not([open]) > :not(summary), [data-state="closed"], [data-state="inactive"]',
+  )
+}
+
 export function focusField(el: HTMLElement | null | undefined): boolean {
   if (!el) return false
   revealField(el)
@@ -199,14 +208,14 @@ export function focusField(el: HTMLElement | null | undefined): boolean {
     target.scrollIntoView?.({ block: "center", behavior: "smooth" })
     target.focus({ preventScroll: true })
   }
-  if (!target.closest("[hidden]")) {
+  if (!concealed(target)) {
     focus()
     return document.activeElement === target
   }
   let tries = 0
   const retry = () => {
     if (!target.isConnected) return
-    if (!target.closest("[hidden]")) focus()
+    if (!concealed(target)) focus()
     else if (++tries < 10) setTimeout(retry, 16)
   }
   setTimeout(retry, 0)

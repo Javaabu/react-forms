@@ -33,6 +33,7 @@ import {
 import { useUi } from "../../core/provider"
 import { useRemoteOptions } from "../../core/remote"
 import { useFormsTranslation } from "../../core/strings"
+import { useReveal } from "../../core/reveal"
 import { thaanaKeyDown } from "../../core/thaana"
 import { html } from "../html"
 
@@ -188,6 +189,16 @@ function Addons({
       {prepend ? <span className="shrink-0 text-sm text-muted-foreground">{prepend}</span> : null}
       <div className="min-w-0 flex-1">{children}</div>
       {append ? <span className="shrink-0 text-sm text-muted-foreground">{append}</span> : null}
+    </div>
+  )
+}
+
+function RevealArea({ onReveal, children }: { onReveal: () => void; children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  useReveal(ref, onReveal)
+  return (
+    <div ref={ref} className="contents">
+      {children}
     </div>
   )
 }
@@ -820,8 +831,13 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
   if (has(c, ["Tabs", "TabsList", "TabsTrigger", "TabsContent"])) {
     const { Tabs, TabsList, TabsTrigger, TabsContent } = c
     components.Tabs = function ShadcnTabs({ items, defaultValue, onValueChange, className }: TabsSlotProps) {
+      const [active, setActive] = React.useState(defaultValue)
+      const select = (value: string) => {
+        setActive(value)
+        onValueChange(value)
+      }
       return (
-        <Tabs defaultValue={defaultValue} onValueChange={onValueChange} className={className}>
+        <Tabs value={active} onValueChange={select} className={className}>
           <TabsList>
             {items.map((item) => (
               <TabsTrigger key={item.value} value={item.value} disabled={item.disabled}>
@@ -830,8 +846,9 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
             ))}
           </TabsList>
           {items.map((item) => (
-            <TabsContent key={item.value} value={item.value}>
-              {item.content}
+            // Mounted while inactive, so fields in other tabs keep their values and submit.
+            <TabsContent key={item.value} value={item.value} forceMount className="data-[state=inactive]:hidden">
+              <RevealArea onReveal={() => select(item.value)}>{item.content}</RevealArea>
             </TabsContent>
           ))}
         </Tabs>
@@ -848,18 +865,31 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
       multiple,
       className,
     }: AccordionSlotProps) {
+      const [open, setOpen] = React.useState<string[]>(defaultValue)
+      const reveal = (value: string) =>
+        setOpen((current) => (current.includes(value) ? current : multiple ? [...current, value] : [value]))
       const content = items.map((item) => (
         <AccordionItem key={item.value} value={item.value} id={item.id} disabled={item.disabled}>
           <AccordionTrigger>{item.title}</AccordionTrigger>
-          <AccordionContent>{item.content}</AccordionContent>
+          {/* Mounted while closed, so fields inside keep their values and submit. */}
+          <AccordionContent forceMount className="data-[state=closed]:hidden">
+            <RevealArea onReveal={() => reveal(item.value)}>{item.content}</RevealArea>
+          </AccordionContent>
         </AccordionItem>
       ))
       return multiple ? (
-        <Accordion id={id} type="multiple" defaultValue={defaultValue} className={className}>
+        <Accordion id={id} type="multiple" value={open} onValueChange={setOpen} className={className}>
           {content}
         </Accordion>
       ) : (
-        <Accordion id={id} type="single" collapsible defaultValue={defaultValue[0]} className={className}>
+        <Accordion
+          id={id}
+          type="single"
+          collapsible
+          value={open[0] ?? ""}
+          onValueChange={(v: string) => setOpen(v ? [v] : [])}
+          className={className}
+        >
           {content}
         </Accordion>
       )

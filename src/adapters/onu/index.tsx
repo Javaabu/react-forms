@@ -89,6 +89,7 @@ import {
   type TabsSlotProps,
   type TextareaSlotProps,
 } from "../../core/adapter"
+import { TabPanel } from "../../core/reveal"
 import { parseDateValue, toDateString, toDateTimeString, toTimeString } from "../../support/dates"
 
 /** Bootstrap colours (Blade's `color`) and the Onu button variants they map to. */
@@ -419,7 +420,30 @@ function OnuAccordion({ id, items, defaultValue, multiple, className }: Accordio
 }
 
 function OnuTabs({ items, defaultValue, onValueChange, className }: TabsSlotProps) {
-  return <Tabs className={className} defaultValue={defaultValue} onValueChange={onValueChange} items={items} />
+  const [active, setActive] = React.useState(defaultValue)
+  const id = React.useId()
+  const select = (value: string) => {
+    setActive(value)
+    onValueChange(value)
+  }
+  // Onu's panels unmount when inactive; render the list with Onu and keep every panel mounted, so fields submit.
+  return (
+    <div className={className}>
+      <Tabs
+        value={active}
+        onValueChange={select}
+        controls={`${id}-panels`}
+        items={items.map(({ value, label, disabled }) => ({ value, label, disabled }))}
+      />
+      <div id={`${id}-panels`} className="pt-4">
+        {items.map((item) => (
+          <TabPanel key={item.value} active={active === item.value} onReveal={() => select(item.value)}>
+            {item.content}
+          </TabPanel>
+        ))}
+      </div>
+    </div>
+  )
 }
 
 function OnuNavTabs({ items, className }: NavTabsSlotProps) {

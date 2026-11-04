@@ -21,6 +21,7 @@ export { useFormsTranslation, STRINGS_PREFIX, type FormsMessageKey } from "./cor
 export { en, dv, type FormsMessages } from "./core/locales"
 export { thaanaKeyDown, toThaana, THAANA_KEYMAP } from "./core/thaana"
 export { useRemoteOptions, type RemoteOptionsState } from "./core/remote"
+export { TabPanel, useReveal, type TabPanelProps } from "./core/reveal"
 
 // Binding, errors, routing
 export {

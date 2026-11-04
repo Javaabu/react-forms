@@ -1,6 +1,6 @@
 ---
 title: Parity with javaabu/forms
-sidebar_position: 90
+sidebar_position: 1.6
 ---
 
 `@javaabu/forms` (React) and [`javaabu/forms`](https://github.com/Javaabu/forms) v2 (Blade) have the same components, attributes, value precedence, ids, labels, errors and strings, so a form moves between a Blade view and an Inertia React page without being redesigned. This page is the React side of the matrix. The Blade side is [`docs/parity.md` in javaabu/forms](https://github.com/Javaabu/forms/blob/next-gen/docs/parity.md). Open questions go in [react-forms#18](https://github.com/Javaabu/react-forms/issues/18).

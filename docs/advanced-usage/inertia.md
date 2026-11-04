@@ -29,7 +29,7 @@ Then forms are plain Blade-style forms:
 
 ```tsx
 import { Form, Text, Email, Submit } from "@javaabu/forms"
-import { update } from "@/actions/App/Http/Controllers/UserController"
+import { update } from "@/actions/App/Http/Controllers/UsersController"
 
 export default function Edit({ user }) {
   return (
@@ -61,7 +61,7 @@ Pass the result of `useForm()` to `form`. The fields read and write `form.data`;
 ```tsx
 import { useForm } from "@inertiajs/react"
 import { Form, Text, Checkbox, File, Submit } from "@javaabu/forms"
-import { store } from "@/actions/App/Http/Controllers/PostController"
+import { store } from "@/actions/App/Http/Controllers/PostsController"
 
 export default function Create() {
   const form = useForm({ title: "", channels: [], cover: null })

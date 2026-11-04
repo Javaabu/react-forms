@@ -11,7 +11,7 @@ There's nothing to install or configure in this package: it reads the plain `{ u
 
 ```tsx
 import { Form, Text, Submit } from "@javaabu/forms"
-import { store, update } from "@/actions/App/Http/Controllers/UserController"
+import { store, update } from "@/actions/App/Http/Controllers/UsersController"
 
 <Form action={store()}>                {/* POST /users */}
   <Text name="name" />
