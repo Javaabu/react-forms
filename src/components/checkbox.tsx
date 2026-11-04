@@ -67,18 +67,20 @@ function useChoiceStore(name: string, value: string, kind: "checkbox" | "radio",
   const group = kind === "checkbox" && name.endsWith("[]")
   const key = group ? before(name, "[]") : name
 
+  // Seed the store once. Functional updates, so boxes of one group don't overwrite each other.
+  const seeded = React.useRef(false)
   React.useEffect(() => {
-    if (!store) return
-    if (group) {
-      store.update(key, (current) => {
+    if (!store || seeded.current) return
+    seeded.current = true
+    store.update(key, (current) => {
+      if (group) {
+        if (current === undefined || current === null) return initial ? [value] : []
         const list = wrap(current as unknown).map(toFormString)
-        return initial && !list.includes(value) ? [...list, value] : list
-      })
-    } else if (kind === "radio") {
-      if (initial || !store.has(key)) store.update(key, (current) => (initial ? value : (current ?? "")))
-    } else if (!store.has(key)) {
-      store.set(key, initial ? value : false)
-    }
+        return initial && !list.includes(value) ? [...list, value] : current
+      }
+      if (kind === "radio") return initial ? value : (current ?? "")
+      return current === undefined ? (initial ? value : false) : current
+    })
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, key])
 

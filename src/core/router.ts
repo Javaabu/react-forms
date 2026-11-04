@@ -77,8 +77,6 @@ export interface VisitOptions {
   only?: string[]
   except?: string[]
   headers?: Record<string, string>
-  /** Reset the form's fields after a successful submit. `true` for all of them, or field names. */
-  reset?: boolean | string[]
   [option: string]: unknown
 }
 

@@ -20,6 +20,7 @@ export const entries: Record<string, string> = {
   "onu-editor": "src/onu-editor.ts",
   "onu-maps": "src/onu-maps.ts",
   testing: "src/testing.ts",
+  inertia: "src/inertia.ts",
 }
 
 const output = {
