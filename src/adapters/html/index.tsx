@@ -585,9 +585,10 @@ const ICON_PATHS: Record<IconName, string> = {
 }
 
 function Icon({ name, size = "md", className }: IconSlotProps) {
+  const { direction } = useFormsTranslation()
   const px = size === "sm" ? 14 : 16
   // Arrows that point to a side follow the reading direction.
-  const flip = name === "chevron-left" || name === "chevron-right"
+  const flip = (name === "chevron-left" || name === "chevron-right") && direction === "rtl"
   return (
     <svg
       data-slot="icon"
@@ -601,7 +602,9 @@ function Icon({ name, size = "md", className }: IconSlotProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
-      className={cx(flip && "rtl:-scale-x-100", className)}
+      data-flipped={flip || undefined}
+      style={flip ? { transform: "scaleX(-1)" } : undefined}
+      className={className}
     >
       <path d={ICON_PATHS[name]} />
     </svg>

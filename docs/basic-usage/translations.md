@@ -163,4 +163,4 @@ function UploadHint() {
 | `add_option` | Add ":value" | ":value" އިތުރުކުރޭ |
 | `thaana_toggle` | Type in Thaana | ތާނައިން ލިޔުއްވާ |
 
-The Dhivehi lines marked for review are listed in [Dhivehi and RTL](../advanced-usage/dhivehi-and-rtl).
+The Dhivehi lines marked for review are listed in [Dhivehi and RTL](../advanced-usage/dhivehi-and-rtl#dhivehi-lines-to-review).
