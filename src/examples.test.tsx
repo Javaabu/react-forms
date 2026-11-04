@@ -5,11 +5,14 @@ import { FormsProvider, mergeAdapters } from "."
 import { html } from "./html"
 import { onu } from "./onu"
 import { onuEditor } from "./onu-editor"
+import { createShadcnAdapter } from "./shadcn"
+import * as shadcnUi from "../test/shadcn"
 
 // The example pages render every component; they should render without errors on each adapter.
 describe.each([
   ["html", html],
   ["onu", mergeAdapters(onu, onuEditor)],
+  ["shadcn", createShadcnAdapter(shadcnUi)],
 ])("the example page on %s", (_, ui) => {
   it("renders every component", () => {
     const errors = vi.spyOn(console, "error").mockImplementation(() => {})

@@ -4,7 +4,7 @@ import react from "@vitejs/plugin-react"
 import { defineConfig } from "vite"
 
 /** One page per integration, rendered against the source. `pnpm examples` serves them, `pnpm examples:build` builds them. */
-const pages = ["index", "onu", "html"]
+const pages = ["index", "onu", "html", "shadcn"]
 
 export default defineConfig({
   root: import.meta.dirname,

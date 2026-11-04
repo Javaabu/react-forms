@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { getBoundValue, useBindTarget, useOldInput, type ModelProp } from "../core/binding"
-import { useFormValues } from "../core/form-context"
+import { useFormState, useFormValues } from "../core/form-context"
 import { useUi } from "../core/provider"
 import { usePublishField } from "../core/registry"
 import { isEmpty, isNil, looseIncludes, toFormString, wrap } from "../support/data"
@@ -150,6 +150,42 @@ export function Checkbox(props: CheckboxProps) {
   )
 }
 
+type GroupListener = (selected: string) => void
+const radioGroups = new WeakMap<object, Map<string, Set<GroupListener>>>()
+const PAGE = {}
+
+/**
+ * Radio groups across any adapter (native radios, Radix buttons, …): `select()` tells the other
+ * radios of the same name in the same form that they are no longer selected.
+ */
+function useRadioGroup(name: string, value: string, onUnselect: () => void) {
+  const form = useFormState()
+  const scope = form?.formRef ?? PAGE
+  const unselect = React.useRef(onUnselect)
+  React.useEffect(() => {
+    unselect.current = onUnselect
+  })
+  const listener = React.useMemo<GroupListener>(
+    () => (selected) => {
+      if (selected !== value) unselect.current()
+    },
+    [value],
+  )
+  React.useEffect(() => {
+    let groups = radioGroups.get(scope)
+    if (!groups) radioGroups.set(scope, (groups = new Map()))
+    let group = groups.get(name)
+    if (!group) groups.set(name, (group = new Set()))
+    group.add(listener)
+    return () => {
+      group.delete(listener)
+    }
+  }, [scope, name, listener])
+  return () => {
+    for (const other of radioGroups.get(scope)?.get(name) ?? []) other(value)
+  }
+}
+
 export interface RadioProps extends Omit<FieldProps, "default"> {
   /** Value submitted when selected. Default `1`. */
   value?: string | number | boolean
@@ -183,23 +219,8 @@ export function Radio(props: RadioProps) {
     store?.set(on)
   }
 
-  // A radio only reports its own change; listen to the group to see it being unchecked. `click` (also
-  // fired for arrow keys) in the capture phase runs before React's handler, so both updates render together.
-  React.useEffect(() => {
-    if (typeof document === "undefined") return
-    const sync = (event: Event) => {
-      const target = event.target
-      if (!(target instanceof HTMLInputElement) || target.type !== "radio") return
-      if (target.name === field.name && target.id !== id && target.checked && !target.disabled) setCurrent(false)
-    }
-    document.addEventListener("click", sync, true)
-    document.addEventListener("change", sync, true)
-    return () => {
-      document.removeEventListener("click", sync, true)
-      document.removeEventListener("change", sync, true)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [field.name, id])
+  // A radio only reports its own selection; the others of its group (same name, same form) unselect themselves.
+  const selectInGroup = useRadioGroup(field.name, submitted, () => setCurrent(false))
 
   usePublishField({
     id,
@@ -224,7 +245,10 @@ export function Radio(props: RadioProps) {
       checked={current}
       label={radioLabel || undefined}
       onCheckedChange={(state) => {
-        if (state) setCurrent(true)
+        if (state) {
+          setCurrent(true)
+          selectInGroup()
+        }
         onCheckedChange?.(state)
       }}
     />,

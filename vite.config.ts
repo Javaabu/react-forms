@@ -21,6 +21,7 @@ export const entries: Record<string, string> = {
   "onu-maps": "src/onu-maps.ts",
   testing: "src/testing.ts",
   inertia: "src/inertia.ts",
+  shadcn: "src/shadcn.ts",
 }
 
 const output = {
