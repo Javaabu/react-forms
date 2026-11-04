@@ -20,7 +20,7 @@ export interface RouteFormDefinition {
  * `<Form model={user} action={update}>` posts to `update(user)`.
  */
 export type FormAction =
-  string | RouteDefinition | RouteFormDefinition | ((model?: never) => RouteDefinition | RouteFormDefinition)
+  string | RouteDefinition | RouteFormDefinition | ((...args: never[]) => RouteDefinition | RouteFormDefinition)
 
 export interface ResolvedAction {
   url: string | undefined
