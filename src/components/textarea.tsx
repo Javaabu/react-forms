@@ -6,6 +6,7 @@ import { useFieldValue } from "../core/binding"
 import { useUi } from "../core/provider"
 import { usePublishField } from "../core/registry"
 import { toFormString } from "../support/data"
+import { Wysiwyg } from "./wysiwyg"
 import { splitFieldProps, useField, useFieldState, type FieldProps, type PlaceholderProps } from "./field"
 
 type NativeTextareaProps = Omit<
@@ -22,10 +23,22 @@ export interface TextareaProps extends FieldProps, PlaceholderProps, NativeTexta
   autoResize?: boolean
   /** Type Thaana from a Latin keyboard. */
   thaana?: boolean
+  /** Render a rich text editor instead, like Blade's `<x-forms::textarea wysiwyg>` (see `Wysiwyg`). */
+  wysiwyg?: boolean
 }
 
 /** `<x-forms::textarea>`. For a rich text editor use `Wysiwyg` (Blade's `wysiwyg` attribute). */
-export function Textarea(props: TextareaProps) {
+export function Textarea({ wysiwyg, ...props }: TextareaProps) {
+  if (wysiwyg) {
+    const { field, rest } = splitFieldProps(props)
+    return (
+      <Wysiwyg {...field} value={rest.value} placeholder={rest.placeholder} showPlaceholder={rest.showPlaceholder} />
+    )
+  }
+  return <PlainTextarea {...props} />
+}
+
+function PlainTextarea(props: Omit<TextareaProps, "wysiwyg">) {
   const ui = useUi()
   const { field, rest } = splitFieldProps(props)
   const { value, placeholder, showPlaceholder, rows = 3, autoResize = false, thaana, onChange, ...textareaProps } = rest

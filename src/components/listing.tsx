@@ -500,7 +500,14 @@ export function FilterSubmit({
       </Button>
       {exports && keys.length ? (
         <ui.ButtonGroup orientation="horizontal">
-          <ui.Button type="submit" color="secondary" name="download" value={keys[0]} startIcon="download">
+          <ui.Button
+            type="submit"
+            color="secondary"
+            name="download"
+            value={keys[0]}
+            startIcon="download"
+            title={t("export_title")}
+          >
             {t("export")}
           </ui.Button>
           {keys.length > 1 ? (
@@ -544,6 +551,7 @@ export interface PerPageProps {
 
 /** `<x-forms::per-page>`: the `per_page` select of a filter form. */
 export function PerPage({ amounts = [10, 20, 50, 100, 500], perPage, label, showLabel, className }: PerPageProps) {
+  const { t } = useFormsTranslation()
   const setting = useSetting<number>("per_page")
   const selected = toFormString(perPage ?? currentQuery().get("per_page") ?? setting ?? "")
   const options: Array<[string, string]> = Array.isArray(amounts)
@@ -556,7 +564,7 @@ export function PerPage({ amounts = [10, 20, 50, 100, 500], perPage, label, show
       options={options}
       default={selected}
       model={false}
-      label={label}
+      label={label ?? t("per_page")}
       showLabel={showLabel}
       allowClear={false}
       hideSearch
@@ -690,7 +698,7 @@ export function Pagination({ paginator, getPageHref, onPageChange, className }: 
           disabled={!p.prev_page_url}
           startIcon="chevron-left"
         >
-          {t("pagination_previous")}
+          {t("previous")}
         </LinkButton>
         <LinkButton
           url={p.next_page_url ?? undefined}
@@ -698,7 +706,7 @@ export function Pagination({ paginator, getPageHref, onPageChange, className }: 
           disabled={!p.next_page_url}
           endIcon="chevron-right"
         >
-          {t("pagination_next")}
+          {t("next")}
         </LinkButton>
       </nav>
     )

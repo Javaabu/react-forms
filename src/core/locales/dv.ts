@@ -43,8 +43,10 @@ export const dv: FormsMessages = {
   no_items_message: "އައު :model_type ހަދާލަމާ.",
   items: "އެއްޗެހި",
   pagination: "ޞަފްޙާތައް",
-  pagination_previous: "ކުރީގެ",
-  pagination_next: "ދެން",
+  previous: "ކުރީގެ",
+  next: "ދެން",
+  per_page: "ކޮންމެ ސަފްހާއެއްގައި",
+  export_title: "XLSX އަށް އެކްސްޕޯޓްކުރޭ",
   export_options: "އިތުރު އެކްސްޕޯޓް އޮޕްޝަންތައް",
   sort_by: ":label އިން ތަރުތީބުކުރޭ",
 

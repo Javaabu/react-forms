@@ -136,7 +136,7 @@ export function adapterConformance(
       name: "ErrorSummary lists the errors and focuses the field",
       run: async () => {
         mount(
-          <Form errors={{ title: "The title field is required." }} focusOnError={false}>
+          <Form errors={{ title: "The title field is required." }} focusOnError={false} summary>
             <Text name="title" />
           </Form>,
         )

@@ -46,8 +46,10 @@ export const en = {
   no_items_message: "Let's create some new :model_type.",
   items: "items",
   pagination: "Pagination",
-  pagination_previous: "Previous",
-  pagination_next: "Next",
+  previous: "Previous",
+  next: "Next",
+  per_page: "Per page",
+  export_title: "Export to XLSX",
   export_options: "More export options",
   sort_by: "Sort by :label",
 

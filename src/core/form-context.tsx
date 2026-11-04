@@ -91,13 +91,15 @@ export function storeFor(form: {
 const NO_ERRORS: string[] = []
 
 /**
- * The errors of one field: from the surrounding `Form`, or, outside a form,
- * from `FormsProvider errors` (the default bag).
+ * The errors of one field: from the surrounding `Form`, or, outside a form or
+ * with a `bag`, from `FormsProvider errors` (the default bag, or the named one).
  */
-export function useFieldErrors(name: string | undefined): string[] {
+export function useFieldErrors(name: string | undefined, bag?: string): string[] {
   const form = useFormState()
-  const { errors: provided } = useFormsConfig()
-  const errors = form ? form.errors : selectErrorBag(provided)
+  const { errors: provided, router } = useFormsConfig()
+  const page = router?.usePageErrors?.()
+  // A named bag reads the page's errors (router or provider); otherwise the form's.
+  const errors = form && !bag ? form.errors : selectErrorBag(page ?? provided, bag)
   const list = errorsFor(errors, name)
   return list.length ? list : NO_ERRORS
 }

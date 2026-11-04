@@ -123,6 +123,18 @@ describe("value precedence: old input → bound value → default", () => {
   })
 })
 
+describe("textarea wysiwyg", () => {
+  it("renders the rich text editor, like Blade's textarea wysiwyg", () => {
+    const { container } = render(
+      <Form model={{ body: "<p>ހެލޯ</p>" }}>
+        <Textarea name="body" wysiwyg />
+      </Form>,
+    )
+    expect(container.querySelector("[data-slot=wysiwyg]")).toBeInTheDocument()
+    expect(values(container).get("body")).toBe("<p>ހެލޯ</p>")
+  })
+})
+
 describe("checkboxes and radios", () => {
   it("are checked from a boolean, an array of values or the default", () => {
     const { container } = render(

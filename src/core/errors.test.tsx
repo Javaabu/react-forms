@@ -140,7 +140,11 @@ describe("errors under fields", () => {
 describe("error summary", () => {
   it("lists every error with the field's label and focuses the field on click", async () => {
     render(
-      <Form errors={{ title: "The title field is required.", "items.0.name": "Name the item." }} focusOnError={false}>
+      <Form
+        errors={{ title: "The title field is required.", "items.0.name": "Name the item." }}
+        focusOnError={false}
+        summary
+      >
         <Text name="title" label="ސުރުޚީ" />
         <Text name="items[0][name]" />
       </Form>,
@@ -156,6 +160,16 @@ describe("error summary", () => {
     render(<ErrorSummary errors={{ email: "Taken." }} title="Fix these" />)
     expect(screen.getByText("Fix these")).toBeInTheDocument()
     expect(screen.getByText("Taken.")).toBeInTheDocument()
+  })
+
+  it("reads a named bag outside a form", () => {
+    render(
+      <FormsProvider errors={{ login: { email: "ނުފެނުނު." } }}>
+        <ErrorSummary bag="login" />
+        <Errors name="email" bag="login" />
+      </FormsProvider>,
+    )
+    expect(screen.getAllByText("ނުފެނުނު.")).toHaveLength(2)
   })
 
   it("renders nothing without errors", () => {

@@ -95,7 +95,10 @@ export interface FormProps<T = FormValues> extends Omit<
   disabled?: boolean
   /** Disable fields while processing. Default `true`. */
   disableWhileProcessing?: boolean
-  /** Show the error summary at the top. Default `true`. */
+  /**
+   * Show the error summary at the top. Default `false`, as in Blade: errors show under their
+   * fields. A general message (a failed submit) still shows at the top.
+   */
   summary?: boolean
   summaryTitle?: React.ReactNode
   /** Focus the first invalid field when errors arrive. Default `true`. */
@@ -141,7 +144,7 @@ export function Form<T = FormValues>(props: FormProps<T>) {
     processing: processingProp,
     disabled,
     disableWhileProcessing = true,
-    summary = true,
+    summary = false,
     summaryTitle,
     focusOnError = true,
     visitOptions,
@@ -424,7 +427,7 @@ export function Form<T = FormValues>(props: FormProps<T>) {
       >
         {csrf && !SAFE_METHODS.includes(method) && token ? <input type="hidden" name="_token" value={token} /> : null}
         {spoof ? <input type="hidden" name="_method" value={method.toUpperCase()} /> : null}
-        {summary ? <ErrorSummary title={summaryTitle} /> : null}
+        {summary ? <ErrorSummary title={summaryTitle} /> : <ErrorSummary errors={null} title={summaryTitle} />}
         {children}
       </ui.Form>
     </FormStateProvider>
@@ -441,6 +444,8 @@ export function Form<T = FormValues>(props: FormProps<T>) {
 export interface ErrorSummaryProps {
   /** Errors to list. Default: the surrounding form's. */
   errors?: FormErrors | null
+  /** List this error bag of `FormsProvider errors` (Blade's `bag`). */
+  bag?: string
   /** A general message. Default: the form's. */
   message?: React.ReactNode
   /** Heading. Default: "Please correct the errors below." */
@@ -452,11 +457,12 @@ export interface ErrorSummaryProps {
 
 /**
  * A summary of every error at the top of a form. Each entry links to its field
- * and focuses it. `Form` renders one unless `summary={false}`; render it yourself
+ * and focuses it. `Form summary` renders one at the top; or render it yourself
  * to place it elsewhere.
  */
 export function ErrorSummary({
   errors: errorsProp,
+  bag,
   message: messageProp,
   title,
   labels,
@@ -464,8 +470,11 @@ export function ErrorSummary({
 }: ErrorSummaryProps) {
   const ui = useUi()
   const form = useFormState()
+  const config = useFormsConfig()
+  const page = config.router?.usePageErrors?.()
   const { t } = useFormsTranslation()
-  const errors = errorsProp !== undefined ? errorsProp : (form?.errors ?? null)
+  const errors =
+    errorsProp !== undefined ? errorsProp : bag || !form ? selectErrorBag(page ?? config.errors, bag) : form.errors
   const message = messageProp !== undefined ? messageProp : form?.message
   const entries = errorEntries(errors)
   if (!entries.length && !message) return null
@@ -549,6 +558,8 @@ export function InputHelp(props: { id?: string; className?: string; children?: R
 export interface ErrorsProps {
   /** Field name (bracket or dot notation). */
   name: string
+  /** Read this error bag of `FormsProvider errors` instead of the form's errors. */
+  bag?: string
   /** Show only the first message, like Blade's `@error`. Default `true`. */
   firstOnly?: boolean
   id?: string
@@ -556,9 +567,9 @@ export interface ErrorsProps {
 }
 
 /** `<x-forms::errors>`: the validation errors of one field, from the surrounding `Form`. */
-export function Errors({ name, firstOnly = true, ...props }: ErrorsProps) {
+export function Errors({ name, bag, firstOnly = true, ...props }: ErrorsProps) {
   const ui = useUi()
-  const errors = useFieldErrors(name)
+  const errors = useFieldErrors(name, bag)
   if (!errors.length) return null
   return <ui.FieldErrors {...props} errors={firstOnly ? errors.slice(0, 1) : errors} />
 }

@@ -3,7 +3,7 @@ title: Validation errors
 sidebar_position: 10
 ---
 
-Laravel's validation errors appear under their fields without any code. A field finds its errors by name, in dot or bracket notation, marks itself invalid and links the messages to the control for screen readers. A summary at the top of the form lists every error and links to the fields.
+Laravel's validation errors appear under their fields without any code. A field finds its errors by name, in dot or bracket notation, marks itself invalid and links the messages to the control for screen readers. With `summary`, a list at the top of the form shows every error and links to the fields.
 
 # Where errors come from
 
@@ -53,7 +53,7 @@ Without `errorBag`, a form reads the default bag. With the Inertia router, `erro
 
 - Each field shows all its messages under the control. `showErrors={false}` hides them and the invalid state.
 - `<Errors name="terms" />` shows a field's first error anywhere in the form (`firstOnly={false}` for all of them), like Blade's `<x-forms::errors>`.
-- The form shows `<ErrorSummary>` at the top. `summary={false}` turns it off, and `summaryTitle` changes its heading. Render `<ErrorSummary />` yourself inside the form to place it elsewhere, or outside a form with `errors`.
+- `<Form summary>` shows `<ErrorSummary>` at the top (off by default, as in Blade), and `summaryTitle` changes its heading. A general message, like a failed submit, always shows at the top. Render `<ErrorSummary />` yourself inside the form to place it elsewhere, or outside a form with `errors`.
 - When the user edits a field, its error goes away until the next submit.
 
 # Accessibility
