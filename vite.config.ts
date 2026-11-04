@@ -9,7 +9,8 @@ const pkg = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), 
 }
 const externals = [...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.peerDependencies ?? {})]
 const isExternal = (id: string) =>
-  externals.some((dep) => id === dep || id.startsWith(`${dep}/`)) || /^(react|react-dom)(\/|$)/.test(id)
+  externals.some((dep) => id === dep || id.startsWith(`${dep}/`)) ||
+  /^(react|react-dom|@testing-library\/react)(\/|$)/.test(id)
 
 /** Library entry points, mirrored by package.json `exports`. */
 export const entries: Record<string, string> = {
@@ -18,6 +19,7 @@ export const entries: Record<string, string> = {
   onu: "src/onu.ts",
   "onu-editor": "src/onu-editor.ts",
   "onu-maps": "src/onu-maps.ts",
+  testing: "src/testing.ts",
 }
 
 const output = {

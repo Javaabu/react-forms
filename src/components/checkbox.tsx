@@ -181,17 +181,21 @@ export function Radio(props: RadioProps) {
     store?.set(on)
   }
 
-  // A radio only reports its own change; listen to the group to see it being unchecked.
+  // A radio only reports its own change; listen to the group to see it being unchecked. `click` (also
+  // fired for arrow keys) in the capture phase runs before React's handler, so both updates render together.
   React.useEffect(() => {
     if (typeof document === "undefined") return
     const sync = (event: Event) => {
-      const target = event.target as HTMLInputElement
-      if (target.type === "radio" && target.name === field.name && target.id !== id && target.checked) {
-        setCurrent(false)
-      }
+      const target = event.target
+      if (!(target instanceof HTMLInputElement) || target.type !== "radio") return
+      if (target.name === field.name && target.id !== id && target.checked && !target.disabled) setCurrent(false)
     }
+    document.addEventListener("click", sync, true)
     document.addEventListener("change", sync, true)
-    return () => document.removeEventListener("change", sync, true)
+    return () => {
+      document.removeEventListener("click", sync, true)
+      document.removeEventListener("change", sync, true)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [field.name, id])
 

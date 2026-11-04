@@ -1,0 +1,11 @@
+{
+  "position": 1.4,
+  "label": "Advanced Usage",
+  "collapsible": true,
+  "collapsed": false,
+  "link": {
+    "type": "generated-index",
+    "slug": "/forms/_categories/advanced-usage",
+    "description": "Adapters for UI frameworks, Inertia, Wayfinder, routers and custom submission"
+  }
+}
