@@ -3,7 +3,7 @@ title: Parity with javaabu/forms
 sidebar_position: 1.6
 ---
 
-`@javaabu/forms` (React) and [`javaabu/forms`](https://github.com/Javaabu/forms) v2 (Blade) have the same components, attributes, value precedence, ids, labels, errors and strings, so a form moves between a Blade view and an Inertia React page without being redesigned. This page is the React side of the matrix. The Blade side is [`docs/parity.md` in javaabu/forms](https://github.com/Javaabu/forms/blob/next-gen/docs/parity.md). Open questions go in [react-forms#18](https://github.com/Javaabu/react-forms/issues/18).
+`@javaabu/forms` (React) and [`javaabu/forms`](https://github.com/Javaabu/forms) v2 (Blade) have the same components, attributes, value precedence, ids, labels, errors and strings, so a form moves between a Blade view and an Inertia React page without being redesigned. This page is the React side of the matrix. The Blade side is [`docs/parity.md` in javaabu/forms](https://github.com/Javaabu/forms/blob/next-gen/docs/parity.md). Decisions were settled in [react-forms#18](https://github.com/Javaabu/react-forms/issues/18).
 
 **Naming.** Blade components are kebab-case and React components PascalCase (`<x-forms::link-button>` ↔ `<LinkButton>`). Blade attributes are kebab-case and React props camelCase (`show-label` ↔ `showLabel`). A Blade named slot is a React prop of the same name (`<x-slot:help>` ↔ `help`), and the default slot is `children`. Blade's attribute bag (`id`, `class`, `disabled`, `min`, …) is the matching React prop (`className` for `class`).
 
@@ -111,6 +111,6 @@ Both packages read the same keys, `forms::strings.<key>`, so an app's `lang/vend
 | --- | --- |
 | Every key of Blade v1's `strings.php` | ✅ |
 | `clear`, `close`, `create_new`, `select_all`, `select_row` (with `:name`), `bulk_action`, `apply`, `filter`, `export`, `export_title`, `export_options`, `pagination`, `per_page`, `previous`, `next`, `error_summary_title`, `no_items_title`, `no_items_message`, `items` | ✅ (added in v2) |
-| `table_array_separator` | ≠ React `", "` / `"، "`; see #18 |
+| `table_array_separator` | ✅ `", "` (en) / `"، "` (dv) in both, agreed in #18 (Blade v1 was `","`) |
 | `pagination_showing`, `sections` | 🅱️ Blade's paginator and tabs views |
 | `sort_by`, `page`, `search`, `add_option`, `loading`, `error_loading_options`, `uploading`, `removing`, `are_you_sure`, `remove_file_confirm`, `remove_file_confirm_button`, `cancel`, `upload_error`, `remove_error`, `file_too_large`, `file_type_not_allowed`, `confirm_text`, `confirm_button`, `delete_confirm_text`, `delete_confirm_button`, `submit_failed`, `thaana_toggle`, `kb`, `mb`, `gb` | ⚛️ Client-side behaviour (js-utilities' messages and the React components' own text) |

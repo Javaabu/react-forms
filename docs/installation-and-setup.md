@@ -23,6 +23,8 @@ With pnpm 10, allow the build scripts of the package and of `@javaabu/i18n` in y
 }
 ```
 
+From pnpm 10.34, packages installed from Git must be allowed by their exact source: pnpm prints the line to add (`"@javaabu/forms@https://codeload.github.com/Javaabu/react-forms/tar.gz/<commit>"`), or run `pnpm approve-builds`. This goes away once the package is on npm.
+
 # Choose a UI adapter
 
 Without an adapter, the components render plain HTML. Pick the adapter for your UI kit once, at the root of your app.
