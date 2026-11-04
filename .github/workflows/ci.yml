@@ -38,3 +38,40 @@ jobs:
       - run: pnpm build
       - name: Examples
         run: pnpm examples:build
+
+  git-install:
+    name: Install from Git (store under node_modules)
+    # Apps install `github:Javaabu/react-forms#next-gen`, so pnpm builds the package (`prepare`) in a temp
+    # folder inside its store. On GitHub Actions that store is under `node_modules`, which once broke
+    # declaration emit (TS2883, #20). Install this commit the same way, into a fresh app.
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - name: Install @javaabu/forms from Git into a new app
+        env:
+          SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: |
+          app="$RUNNER_TEMP/app"
+          mkdir -p "$app" && cd "$app"
+          cat > package.json <<JSON
+          {
+            "name": "git-install-check",
+            "private": true,
+            "type": "module",
+            "dependencies": {
+              "@javaabu/forms": "github:${{ github.repository }}#$SHA",
+              "react": "^19.0.0",
+              "react-dom": "^19.0.0"
+            },
+            "pnpm": { "onlyBuiltDependencies": ["@javaabu/forms", "@javaabu/i18n"] }
+          }
+          JSON
+          pnpm install --store-dir "$RUNNER_TEMP/store/node_modules/.pnpm-store"
+          test -f node_modules/@javaabu/forms/dist/index.d.ts
+          node -e 'const f = require("@javaabu/forms"); if (typeof f.Form !== "function") process.exit(1)'
+          node --input-type=module -e 'import { Form } from "@javaabu/forms"; import { html } from "@javaabu/forms/html"; if (typeof Form !== "function" || html.name !== "html") process.exit(1)'
