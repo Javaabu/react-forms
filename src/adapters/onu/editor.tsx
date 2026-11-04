@@ -1,10 +1,11 @@
 "use client"
 
+import type * as React from "react"
 import { WysiwygEditor } from "@javaabu/onu/editor"
 
 import { defineAdapter, type WysiwygSlotProps } from "../../core/adapter"
 
-function OnuWysiwyg({ value, onValueChange, ...props }: WysiwygSlotProps) {
+function OnuWysiwyg({ value, onValueChange, ...props }: WysiwygSlotProps): React.JSX.Element {
   return (
     <WysiwygEditor
       {...props}

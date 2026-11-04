@@ -1,5 +1,6 @@
 "use client"
 
+import type * as React from "react"
 import { MapPicker, MapPolygon, MapRadius, type PolygonCollection } from "@javaabu/onu/maps"
 
 import { defineAdapter, type MapSlotProps } from "../../core/adapter"
@@ -26,7 +27,7 @@ function OnuMap({
   polygons,
   onPolygonsChange,
   ...props
-}: MapSlotProps) {
+}: MapSlotProps): React.JSX.Element {
   if (mode === "polygon") {
     return (
       <MapPolygon

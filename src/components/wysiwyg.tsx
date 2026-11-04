@@ -1,5 +1,6 @@
 "use client"
 
+import type * as React from "react"
 import { useFieldValue } from "../core/binding"
 import { useUi } from "../core/provider"
 import { usePublishField } from "../core/registry"
@@ -18,7 +19,7 @@ export interface WysiwygProps extends FieldProps, PlaceholderProps {
  * that submits HTML. The editor comes from the adapter (`@javaabu/forms/onu/editor`
  * for Onu's Tiptap editor); without one it is a plain textarea.
  */
-export function Wysiwyg(props: WysiwygProps) {
+export function Wysiwyg(props: WysiwygProps): React.JSX.Element {
   const ui = useUi()
   const { field, rest } = splitFieldProps(props)
   const { value, placeholder, showPlaceholder, onChange, className } = rest
