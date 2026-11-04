@@ -5,7 +5,7 @@ import tseslint from "typescript-eslint"
 
 /** Physical (left/right) Tailwind utilities; RTL needs the logical ones (ms-, pe-, start-, text-start). */
 const physical =
-  /(^|[\s:"'`])-?(ml|mr|pl|pr|left|right|rounded-l|rounded-r|border-l|border-r|text-left|text-right)(-|\b)/
+  /(^|[\s:"'`])-?((ml|mr|pl|pr|left|right|rounded-l|rounded-r|border-l|border-r)-[\w[]|(text-left|text-right|rounded-l|rounded-r|border-l|border-r)(?![\w-]))/
 
 export default tseslint.config(
   { ignores: ["dist", "coverage", "node_modules", "examples/dist"] },
