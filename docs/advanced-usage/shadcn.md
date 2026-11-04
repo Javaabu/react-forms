@@ -82,7 +82,7 @@ Tailwind must see the package's classes too: add `@source "../../node_modules/@j
 | `Dialog`, `DialogTrigger`, `DialogContent`, `DialogHeader`, `DialogTitle`, `DialogDescription`, `DialogFooter` | `Modal` |
 | `DropdownMenu`, `DropdownMenuTrigger`, `DropdownMenuContent`, `DropdownMenuItem` | `ActionMenu` |
 
-Not covered by shadcn, so plain HTML (style them by `data-slot`): `Image`, `Wysiwyg`, `Map`, `EmptyState`, `Pagination`, `DescriptionList`, `NavTabs`, `ErrorSummary` without `Alert`. Replace any of them with your own components through `components` (see [UI adapters](./adapters)).
+`Form`, `DescriptionList`, `DescriptionItem` and `EmptyState` are always included, built from Tailwind utilities and shadcn's theme tokens. Not covered by shadcn, so plain HTML (style them by `data-slot`): `Image`, `Wysiwyg`, `Map`, `Pagination`, `NavTabs`, `ErrorSummary` without `Alert`. Replace any of them with your own components through `components` (see [UI adapters](./adapters)).
 
 # Notes
 

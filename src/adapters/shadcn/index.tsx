@@ -12,6 +12,10 @@ import {
   type CardSlotProps,
   type CheckboxSlotProps,
   type DateSlotProps,
+  type DescriptionItemSlotProps,
+  type DescriptionListSlotProps,
+  type EmptyStateSlotProps,
+  type FormSlotProps,
   type ErrorSummarySlotProps,
   type FieldSlotProps,
   type FileSlotProps,
@@ -294,7 +298,7 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
       const body = (
         <>
           {labelNode}
-          <div className={cx("grid gap-2", classNames?.control)}>
+          <div className={cx("grid gap-2", inline && "min-w-0 flex-1", classNames?.control)}>
             {children}
             {helpNode}
             {errorNode}
@@ -306,7 +310,7 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
           <FieldRoot
             data-invalid={errors.length ? true : undefined}
             data-disabled={disabled || undefined}
-            orientation={inline ? "responsive" : "vertical"}
+            orientation={inline ? "horizontal" : "vertical"}
             className={classNames?.group}
           >
             {body}
@@ -691,8 +695,14 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
           {...props}
           variant={colorToShadcnVariant(color)}
           size={size ? SIZES[size] : undefined}
-          disabled={disabled || loading}
+          // Not `disabled`: a submit button disabled during its own click doesn't submit the form.
+          disabled={disabled}
           aria-busy={loading || undefined}
+          aria-disabled={loading || undefined}
+          onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
+            if (loading) event.preventDefault()
+            else props.onClick?.(event)
+          }}
         >
           {loading ? <Spinner /> : startIcon ? <ui.Icon name={startIcon} /> : null}
           {children}
@@ -956,6 +966,56 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
         </DropdownMenu>
       )
     }
+  }
+
+  // Layout slots shadcn has no component for, in shadcn's tokens.
+  components.Form = function ShadcnForm({ processing: _processing, className, ...props }: FormSlotProps) {
+    return <form data-slot="form" className={cx("flex flex-col gap-6", className)} {...props} />
+  }
+  components.DescriptionList = function ShadcnDescriptionList({
+    layout,
+    className,
+    children,
+  }: DescriptionListSlotProps) {
+    return (
+      <dl data-slot="description-list" data-layout={layout} className={cx("grid gap-4 text-sm", className)}>
+        {children}
+      </dl>
+    )
+  }
+  components.DescriptionItem = function ShadcnDescriptionItem({
+    label,
+    classNames,
+    className,
+    children,
+  }: DescriptionItemSlotProps) {
+    return (
+      <div
+        data-slot="description-item"
+        className={cx("grid gap-1 sm:grid-cols-[12rem_minmax(0,1fr)] sm:gap-4", className)}
+      >
+        {label !== null && label !== undefined && label !== "" ? (
+          <dt className={cx("text-muted-foreground", classNames?.label)}>{label}</dt>
+        ) : null}
+        <dd className={cx("font-medium", classNames?.value)}>{children}</dd>
+      </div>
+    )
+  }
+  components.EmptyState = function ShadcnEmptyState({
+    icon,
+    title,
+    description,
+    action,
+    className,
+  }: EmptyStateSlotProps) {
+    return (
+      <div data-slot="empty-state" className={cx("flex flex-col items-center gap-2 py-10 text-center", className)}>
+        {icon ? <div className="text-muted-foreground">{icon}</div> : null}
+        <p className="font-medium">{title}</p>
+        {description ? <p className="text-sm text-muted-foreground">{description}</p> : null}
+        {action ? <div className="pt-2">{action}</div> : null}
+      </div>
+    )
   }
 
   return defineAdapter({ name: options.name ?? "shadcn", components, confirm: options.confirm, notify: options.notify })

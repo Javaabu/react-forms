@@ -17,8 +17,9 @@ testAdapter(shadcn)
 describe("the shadcn adapter", () => {
   it("only fills the slots whose components are given", () => {
     const partial = createShadcnAdapter({ Input: ui.Input })
-    expect(Object.keys(partial.components).sort()).toEqual(["Date", "File", "Input", "Number"])
-    expect(createShadcnAdapter({}).components).toEqual({})
+    const layout = ["DescriptionItem", "DescriptionList", "EmptyState", "Form"]
+    expect(Object.keys(partial.components).sort()).toEqual(["Date", "File", "Input", "Number", ...layout].sort())
+    expect(Object.keys(createShadcnAdapter({}).components).sort()).toEqual(layout)
   })
 
   it("renders shadcn's own markup", () => {

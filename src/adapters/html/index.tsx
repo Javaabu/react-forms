@@ -628,15 +628,21 @@ function ButtonContent({
   )
 }
 
-function Button({ color, size, loading, startIcon, endIcon, children, disabled, ...props }: ButtonSlotProps) {
+function Button({ color, size, loading, startIcon, endIcon, children, disabled, onClick, ...props }: ButtonSlotProps) {
   return (
     <button
       data-slot="button"
       data-color={color}
       data-size={size}
       aria-busy={loading || undefined}
-      disabled={disabled || loading}
+      // Not `disabled`: a submit button disabled during its own click doesn't submit the form.
+      aria-disabled={loading || undefined}
+      disabled={disabled}
       {...props}
+      onClick={(event) => {
+        if (loading) event.preventDefault()
+        else onClick?.(event)
+      }}
     >
       <ButtonContent startIcon={startIcon} endIcon={endIcon} loading={loading}>
         {children}

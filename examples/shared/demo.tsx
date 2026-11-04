@@ -74,7 +74,7 @@ export function Demo({ title }: { title: string }) {
           errors={{ slug: "The slug has already been taken." }}
           onSubmit={(values) => new Promise((resolve) => setTimeout(() => resolve(values), 800))}
         >
-          <Forms.Text name="title" required thaana />
+          <Forms.Text name="title" required />
           <Forms.Text name="title_dv" label="ސުރުޚީ" thaana />
           <Forms.Text name="slug" help="Used in the article's URL." />
           <Forms.Textarea name="body" rows={3} />

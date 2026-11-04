@@ -159,7 +159,7 @@ Strings come from [`@javaabu/i18n`](https://github.com/Javaabu/i18n) and follow 
 
 # Examples
 
-The repository has a page per adapter in `examples/` (Onu, shadcn/ui and plain HTML), each with a Dhivehi version (`?dv`):
+The repository has a page per integration in `examples/` (Onu, shadcn/ui, plain HTML, Inertia and fetch, the last two against a mock Laravel endpoint), each with a Dhivehi version (`?dv`):
 
 ```bash
 git clone https://github.com/Javaabu/react-forms && cd react-forms

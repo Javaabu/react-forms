@@ -101,7 +101,8 @@ The source of the HTML adapter (`src/adapters/html/index.tsx`) is the reference:
 4. **The label is ready.** `Field`'s `label` already includes the required marker. Render it inside a `<label htmlFor={id}>`. With `hideLabel`, hide it visually but keep it for screen readers.
 5. **Logical CSS.** Use `ms-`/`pe-`/`start-`, not `left`/`right`, so the adapter works in Dhivehi (RTL).
 6. **Keep hidden content mounted.** Inactive tab panels and closed accordion items stay mounted, so their fields keep their values and submit, as in Blade. Open them on the `forms:reveal` event (sent before an invalid field is focused): `TabPanel` and `useReveal` from `@javaabu/forms` do both.
-7. **Thaana.** When `Input` or `Textarea` gets `thaana`, let users type Thaana: use your kit's support, or `onKeyDown={thaanaKeyDown}` from `@javaabu/forms`.
+7. **Loading buttons stay enabled.** Show `loading` with `aria-busy` and ignore clicks, but don't set `disabled`: the submit button starts loading during its own click, and a button that becomes disabled then doesn't submit the form.
+8. **Thaana.** When `Input` or `Textarea` gets `thaana`, let users type Thaana: use your kit's support, or `onKeyDown={thaanaKeyDown}` from `@javaabu/forms`.
 
 ## Slots
 

@@ -313,9 +313,9 @@ export function adapterConformance(
         await waitFor(() => equal(submitted, 1, "submits"))
         const busy = () => {
           const b = screen.getByRole("button", { name: /Save/ }) as HTMLButtonElement
-          return b.disabled || b.getAttribute("aria-busy") === "true" || b.getAttribute("data-loading") !== null
+          return b.getAttribute("aria-busy") === "true" || b.getAttribute("data-loading") !== null
         }
-        await waitFor(() => check(busy(), "the button must be disabled or aria-busy while processing"))
+        await waitFor(() => check(busy(), "the button must show aria-busy (or data-loading) while processing"))
         await act(async () => resolve())
       },
     },

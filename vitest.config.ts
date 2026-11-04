@@ -16,6 +16,8 @@ export default defineConfig({
       include: ["src/**/*.{ts,tsx}"],
       exclude: ["src/**/*.test.{ts,tsx}", "src/**/types.ts"],
       reporter: ["text-summary", "lcov", "json-summary"],
+      // Onu's maps adapter needs Google Maps, so it is only typechecked.
+      thresholds: { lines: 85, statements: 82, functions: 82, branches: 68 },
     },
   },
 })
