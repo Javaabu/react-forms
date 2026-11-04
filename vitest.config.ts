@@ -11,5 +11,11 @@ export default defineConfig({
     css: false,
     // Onu imports `lucide-react/dynamic` without an extension; let Vite resolve it as an app bundler would.
     server: { deps: { inline: [/@javaabu\/onu/] } },
+    coverage: {
+      provider: "v8",
+      include: ["src/**/*.{ts,tsx}"],
+      exclude: ["src/**/*.test.{ts,tsx}", "src/**/types.ts"],
+      reporter: ["text-summary", "lcov", "json-summary"],
+    },
   },
 })

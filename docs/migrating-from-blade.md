@@ -14,12 +14,12 @@ Attributes become camelCase props (`show-label` → `showLabel`, `:options="$x"`
 | `x-forms::form-group`, `label`, `label-required`, `input-help`, `errors` | `FormGroup`, `Label`, `LabelRequired`, `InputHelp`, `Errors` | `FormField`, `Label`, `RequiredMarker`, `HelpText`, `FieldErrors` |
 | `x-forms::input`, `text`, `email`, `password`, `number`, `tel`, `url`, `hidden`, `latitude`, `longitude` | `Input`, `Text`, `Email`, `Password`, `Number`, `Tel`, `Url`, `Hidden`, `Latitude`, `Longitude` | `TextInput`, `EmailInput`, `PasswordInput`, `NumberInput`, `UrlInput`, `HiddenInput` |
 | `x-forms::textarea` | `Textarea` | `Textarea` |
-| `x-forms::wysiwyg`, `textarea wysiwyg` | `Wysiwyg` (`@javaabu/react-forms/editor`) | `WysiwygEditor` |
+| `x-forms::wysiwyg`, `textarea wysiwyg` | `Wysiwyg` (`@javaabu/forms/editor`) | `WysiwygEditor` |
 | `x-forms::checkbox`, `radio` | `Checkbox`, `Radio` | `Checkbox`, native radio |
 | `x-forms::date`, `datetime`, `time` | `Date`, `Datetime`, `Time` | `DatePicker`, `DateTimePicker`, `TimePicker` |
 | `x-forms::select`, `select2` | `Select`, `Select2` | `Select`, `SearchableSelect`, `MultiSelect`, `ApiSelect`, `QuickCreateSelect` |
 | `x-forms::file`, `file-upload`, `image`, `image-upload` | `File`, `FileUpload`, `Image`, `ImageUpload` | `FileInput`, `ImageInput` |
-| `x-forms::map-input` | `MapInput` (`@javaabu/react-forms/maps`) | `MapPicker`, `MapRadius`, `MapPolygon` |
+| `x-forms::map-input` | `MapInput` (`@javaabu/forms/maps`) | `MapPicker`, `MapRadius`, `MapPolygon` |
 | `x-forms::conditional-wrapper` | `ConditionalWrapper` | `ConditionalDisplay` |
 | `x-forms::button`, `submit`, `link-button`, `button-group` | `Button`, `Submit`, `LinkButton`, `ButtonGroup` | `Button`, `LinkButton`, `ButtonGroup` |
 | `x-forms::alert` | `Alert` | `Callout` |

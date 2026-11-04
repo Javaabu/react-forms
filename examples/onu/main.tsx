@@ -46,7 +46,7 @@ function App() {
         <Forms.FormsProvider settings={{ max_upload_file_size: 10240, max_image_file_size: 2048 }}>
           <main className="mx-auto max-w-4xl gap-8 p-6 grid">
             <div className="flex items-center justify-between">
-              <h1 className="text-2xl font-semibold">@javaabu/react-forms</h1>
+              <h1 className="text-2xl font-semibold">@javaabu/forms</h1>
               <Forms.Button color="light" onClick={() => setRtl((v) => !v)}>
                 {rtl ? "English" : "ދިވެހި"}
               </Forms.Button>

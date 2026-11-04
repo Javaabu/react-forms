@@ -1,6 +1,6 @@
 # React Forms: notes for AI coding agents
 
-`@javaabu/react-forms` is the React port of the [`javaabu/forms`](https://github.com/Javaabu/forms) Blade components and the form behaviour of [`@javaabu/js-utilities`](https://github.com/Javaabu/js-utilities), built on [`@javaabu/onu`](https://github.com/Javaabu/onu).
+`@javaabu/forms` is the React port of the [`javaabu/forms`](https://github.com/Javaabu/forms) Blade components and the form behaviour of [`@javaabu/js-utilities`](https://github.com/Javaabu/js-utilities), built on [`@javaabu/onu`](https://github.com/Javaabu/onu).
 
 ## Layout
 
@@ -11,7 +11,7 @@
 | `src/support`            | Ports of the Laravel / javaabu helpers (`Str`, `data_get`, `AllowedMimeTypes`, …)                                                         |
 | `src/locales`            | `en` / `dv` strings (from `lang/*/strings.php`)                                                                                           |
 | `src/editor`, `src/maps` | Separate entries for the heavy Onu editor and maps                                                                                        |
-| `playground`             | `pnpm dev`: every component on one page (`?dv` for Dhivehi)                                                                               |
+| `examples`               | `pnpm examples`: one page per integration (`?dv` for Dhivehi)                                                                             |
 | `docs`                   | One page per Blade docs page, plus `migrating-from-blade.md`                                                                              |
 
 ## Rules
@@ -28,5 +28,5 @@ pnpm install
 pnpm lint && pnpm format:check && pnpm typecheck
 pnpm test
 pnpm build
-pnpm dev
+pnpm examples
 ```

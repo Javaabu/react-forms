@@ -1,8 +1,8 @@
 /*
- * Let Tailwind CSS v4 see the classes used inside @javaabu/react-forms.
+ * Let Tailwind CSS v4 see the classes used inside @javaabu/forms.
  *
  *   @import "tailwindcss";
  *   @import "@javaabu/onu/tailwind.css";
- *   @import "@javaabu/react-forms/tailwind.css";
+ *   @import "@javaabu/forms/tailwind.css";
  */
 @source "../../dist";

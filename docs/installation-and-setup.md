@@ -4,7 +4,7 @@ sidebar_position: 1.2
 ---
 
 ```bash
-npm install @javaabu/react-forms @javaabu/onu
+npm install @javaabu/forms @javaabu/onu
 ```
 
 `@javaabu/onu` is a peer dependency. Set Onu up first (see its installation guide), then let Tailwind CSS v4 see this package's classes too:
@@ -12,14 +12,14 @@ npm install @javaabu/react-forms @javaabu/onu
 ```css
 @import "tailwindcss";
 @import "@javaabu/onu/tailwind.css";
-@import "@javaabu/react-forms/tailwind.css";
+@import "@javaabu/forms/tailwind.css";
 ```
 
 Wrap the app once:
 
 ```tsx
 import { OnuProvider, ThemeProvider } from "@javaabu/onu"
-import { FormsProvider } from "@javaabu/react-forms"
+import { FormsProvider } from "@javaabu/forms"
 
 <ThemeProvider>
   <OnuProvider locale={dv}>
@@ -48,7 +48,7 @@ The package strings follow Onu's locale. English and Dhivehi are built in.
 A namespace import reads like Blade's `x-forms::` prefix and avoids clashes with the globals `Date`, `Number`, `File` and `Image`:
 
 ```tsx
-import * as Forms from "@javaabu/react-forms"
+import * as Forms from "@javaabu/forms"
 
 <Forms.Date name="published_at" />
 ```
@@ -56,6 +56,6 @@ import * as Forms from "@javaabu/react-forms"
 The rich text editor and the map input have their own entries, so their heavy dependencies only load when you use them:
 
 ```tsx
-import { Wysiwyg } from "@javaabu/react-forms/editor"
-import { MapInput } from "@javaabu/react-forms/maps"
+import { Wysiwyg } from "@javaabu/forms/editor"
+import { MapInput } from "@javaabu/forms/maps"
 ```

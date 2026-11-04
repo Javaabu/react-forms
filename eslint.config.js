@@ -8,7 +8,7 @@ const physical =
   /(^|[\s:"'`])-?(ml|mr|pl|pr|left|right|rounded-l|rounded-r|border-l|border-r|text-left|text-right)(-|\b)/
 
 export default tseslint.config(
-  { ignores: ["dist", "coverage", "node_modules"] },
+  { ignores: ["dist", "coverage", "node_modules", "examples/dist"] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   {

@@ -1,5 +1,5 @@
 // Recommended usage mirrors Blade's `<x-forms::input>`:
-//   import * as Forms from "@javaabu/react-forms"
+//   import * as Forms from "@javaabu/forms"
 //   <Forms.Form model={user}><Forms.Text name="name" /></Forms.Form>
 
 // Configuration, binding and the field registry

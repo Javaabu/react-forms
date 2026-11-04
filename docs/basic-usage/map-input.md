@@ -4,7 +4,7 @@ sidebar_position: 8.5
 ---
 
 ```tsx
-import { MapInput } from "@javaabu/react-forms/maps"
+import { MapInput } from "@javaabu/forms/maps"
 
 <MapInput name="location" model={venue} />
 <MapInput name="area" enableRadius radiusUnit="km" />

@@ -25,7 +25,7 @@ export interface TextareaProps extends FieldProps, PlaceholderProps, NativeTexta
 
 /**
  * `<x-forms::textarea>`. For a rich text editor use `Wysiwyg` from
- * `@javaabu/react-forms/editor` (Blade's `wysiwyg` attribute).
+ * `@javaabu/forms/editor` (Blade's `wysiwyg` attribute).
  */
 export function Textarea(props: TextareaProps) {
   const { field, rest } = splitFieldProps(props)

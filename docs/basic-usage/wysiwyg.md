@@ -4,7 +4,7 @@ sidebar_position: 8
 ---
 
 ```tsx
-import { Wysiwyg } from "@javaabu/react-forms/editor"
+import { Wysiwyg } from "@javaabu/forms/editor"
 
 <Wysiwyg name="message" />
 <Wysiwyg name="body" model={article} thaana />

@@ -1,6 +1,11 @@
-# React Forms
+# Forms for React
 
-`@javaabu/react-forms` is the React port of [`javaabu/forms`](https://github.com/Javaabu/forms), the Laravel Blade components. It also covers the form behaviour of [`@javaabu/js-utilities`](https://github.com/Javaabu/js-utilities). It is built on [Onu](https://www.npmjs.com/package/@javaabu/onu), Javaabu's React UI library, so it inherits RTL and Dhivehi support, Thaana typing, theming and WCAG 2.2 AA accessibility.
+[![Tests](https://github.com/Javaabu/react-forms/actions/workflows/ci.yml/badge.svg?branch=next-gen)](https://github.com/Javaabu/react-forms/actions/workflows/ci.yml?query=branch%3Anext-gen)
+[![Coverage](https://codecov.io/gh/Javaabu/react-forms/branch/next-gen/graph/badge.svg)](https://codecov.io/gh/Javaabu/react-forms/tree/next-gen)
+[![npm](https://img.shields.io/npm/v/@javaabu/forms.svg)](https://www.npmjs.com/package/@javaabu/forms)
+[![License](https://img.shields.io/github/license/Javaabu/react-forms.svg)](LICENSE.md)
+
+`@javaabu/forms` is the React port of [`javaabu/forms`](https://github.com/Javaabu/forms), the Laravel Blade components. It also covers the form behaviour of [`@javaabu/js-utilities`](https://github.com/Javaabu/js-utilities). It is built on [Onu](https://www.npmjs.com/package/@javaabu/onu), Javaabu's React UI library, so it inherits RTL and Dhivehi support, Thaana typing, theming and WCAG 2.2 AA accessibility.
 
 The API follows the Blade components. Blade attributes become camelCase props, and slots become props or children.
 
@@ -14,7 +19,7 @@ The API follows the Blade components. Blade attributes become camelCase props, a
 ```
 
 ```tsx
-import * as Forms from "@javaabu/react-forms"
+import * as Forms from "@javaabu/forms"
 
 ;<Forms.Form model={article} method="PATCH" action={route("articles.update", article.id)}>
   <Forms.Text name="title" required />
@@ -43,7 +48,7 @@ import * as Forms from "@javaabu/react-forms"
 
 ```bash
 pnpm install
-pnpm dev          # playground with every component (add ?dv for Dhivehi)
+pnpm examples     # one page per integration (add ?dv for Dhivehi)
 pnpm test
 pnpm lint && pnpm typecheck && pnpm format:check
 pnpm build
