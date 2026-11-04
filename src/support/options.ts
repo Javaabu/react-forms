@@ -1,5 +1,5 @@
 import * as React from "react"
-import type { ChoiceOption } from "@javaabu/onu"
+import type { SelectOption as ChoiceOption } from "../core/adapter"
 
 import { dataGet, isNil, toFormString, wrap } from "./data"
 import { snake } from "./str"
@@ -10,7 +10,7 @@ import { snake } from "./str"
  * - `["a", "b"]`: a PHP list, so the values are the indexes `0`, `1` (as in Blade);
  * - `[[10, "Ten"], [5, "Five"]]`: ordered pairs, when key order matters (JS sorts numeric object keys);
  * - `[{ id: 1, name: "Malé" }]`: records (an Eloquent collection), read with `idField` / `nameField`;
- * - `[{ value: "1", label: "Malé" }]`: Onu `ChoiceOption`s.
+ * - `[{ value: "1", label: "Malé" }]`: `SelectOption`s.
  */
 export type OptionsInput =
   | Record<string, React.ReactNode>
@@ -38,7 +38,7 @@ function isChoiceOption(item: Record<string, unknown>) {
   return "value" in item && "label" in item
 }
 
-/** Normalizes any `OptionsInput` to Onu `ChoiceOption`s (string values). */
+/** Normalizes any `OptionsInput` to `SelectOption`s (string values). */
 export function normalizeOptions(options: OptionsInput | null | undefined, fields: OptionFields = {}): ChoiceOption[] {
   if (!options) return []
   const nameField = fields.nameField || "name"

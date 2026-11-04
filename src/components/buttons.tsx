@@ -1,60 +1,36 @@
 "use client"
 
 import * as React from "react"
-import {
-  Button as OnuButton,
-  ButtonGroup as OnuButtonGroup,
-  LinkButton as OnuLinkButton,
-  useOnuForm,
-  type ButtonProps as OnuButtonProps,
-  type ButtonVariant,
-} from "@javaabu/onu"
+
+import type { ButtonColor, ButtonSlotProps, LinkButtonSlotProps } from "../core/adapter"
+import { useFormState } from "../core/form-context"
+import { useUi } from "../core/provider"
 import { useSyncedState } from "../support/use-synced-state"
 
-/** Bootstrap colour names (Blade's `color`) and the Onu variants they map to. */
-export type ButtonColor =
-  "primary" | "secondary" | "success" | "danger" | "warning" | "info" | "light" | "dark" | "link" | `outline-${string}`
+export type { ButtonColor }
 
-const VARIANTS: Record<string, ButtonVariant> = {
-  primary: "default",
-  secondary: "secondary",
-  success: "success",
-  danger: "destructive",
-  warning: "warning",
-  info: "default",
-  light: "outline",
-  dark: "secondary",
-  link: "link",
-}
-
-/** The Onu variant for a Blade button colour (`outline-*` → `outline`). */
-export function colorToVariant(color: string | undefined): ButtonVariant {
-  if (!color) return "default"
-  if (color.startsWith("outline-")) return "outline"
-  return VARIANTS[color] ?? "default"
-}
-
-export interface ButtonProps extends Omit<OnuButtonProps, "color"> {
-  /** Bootstrap colour (`primary`, `danger`, …). Ignored when `variant` is set. Default `primary`. */
+export interface ButtonProps extends Omit<ButtonSlotProps, "color"> {
+  /** Bootstrap colour (`primary`, `danger`, `outline-secondary`, …). Default `primary`. */
   color?: ButtonColor
   /**
    * Show a spinner once the form submits (js-utilities' `animate-submit`): on a
-   * valid native submit, or while the surrounding `Form`'s `onSubmit` runs.
+   * valid native submit, or while the surrounding `Form` processes.
    */
   animate?: boolean
 }
 
 /** `<x-forms::button>`. */
-export function Button({ color = "primary", variant, animate, type, onClick, loading, ...props }: ButtonProps) {
-  const form = useOnuForm()
+export function Button({ color = "primary", animate, type = "button", onClick, loading, ...props }: ButtonProps) {
+  const ui = useUi()
+  const form = useFormState()
   // A click starts the spinner; any change of the form's status (submitting, error, …) resets it.
   const [clicked, setClicked] = useSyncedState(false, form?.status)
 
   return (
-    <OnuButton
+    <ui.Button
       {...props}
       type={type}
-      variant={variant ?? colorToVariant(color)}
+      color={color}
       loading={loading ?? (animate ? clicked || !!form?.processing : undefined)}
       onClick={(event) => {
         onClick?.(event)
@@ -71,22 +47,26 @@ export function Submit({ animate = true, ...props }: Omit<ButtonProps, "type">) 
   return <Button {...props} type="submit" animate={animate} />
 }
 
-export interface LinkButtonProps extends Omit<React.ComponentProps<typeof OnuLinkButton>, "href" | "color"> {
+export interface LinkButtonProps extends Omit<LinkButtonSlotProps, "href" | "color"> {
   url?: string
   color?: ButtonColor
 }
 
 /** `<x-forms::link-button>`: a link styled as a button. */
-export function LinkButton({ url, color = "primary", variant, ...props }: LinkButtonProps) {
-  return <OnuLinkButton {...props} href={url ?? "#"} variant={variant ?? colorToVariant(color)} />
+export function LinkButton({ url, color = "primary", ...props }: LinkButtonProps) {
+  const ui = useUi()
+  return <ui.LinkButton {...props} href={url ?? "#"} color={color} />
 }
 
-export interface ButtonGroupProps extends React.ComponentProps<typeof OnuButtonGroup> {
+export interface ButtonGroupProps {
   /** `false` stacks the buttons vertically. Default `true`. */
   inline?: boolean
+  className?: string
+  children?: React.ReactNode
 }
 
 /** `<x-forms::button-group>`. */
-export function ButtonGroup({ inline = true, orientation, ...props }: ButtonGroupProps) {
-  return <OnuButtonGroup {...props} orientation={orientation ?? (inline ? "horizontal" : "vertical")} />
+export function ButtonGroup({ inline = true, ...props }: ButtonGroupProps) {
+  const ui = useUi()
+  return <ui.ButtonGroup {...props} orientation={inline ? "horizontal" : "vertical"} />
 }

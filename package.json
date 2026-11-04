@@ -45,15 +45,25 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./editor": {
-      "types": "./dist/editor/index.d.ts",
-      "import": "./dist/editor/index.js",
-      "require": "./dist/editor/index.cjs"
+    "./html": {
+      "types": "./dist/html.d.ts",
+      "import": "./dist/html.js",
+      "require": "./dist/html.cjs"
     },
-    "./maps": {
-      "types": "./dist/maps/index.d.ts",
-      "import": "./dist/maps/index.js",
-      "require": "./dist/maps/index.cjs"
+    "./onu": {
+      "types": "./dist/onu.d.ts",
+      "import": "./dist/onu.js",
+      "require": "./dist/onu.cjs"
+    },
+    "./onu/editor": {
+      "types": "./dist/onu-editor.d.ts",
+      "import": "./dist/onu-editor.js",
+      "require": "./dist/onu-editor.cjs"
+    },
+    "./onu/maps": {
+      "types": "./dist/onu-maps.d.ts",
+      "import": "./dist/onu-maps.js",
+      "require": "./dist/onu-maps.cjs"
     },
     "./tailwind.css": "./src/styles/tailwind.css",
     "./package.json": "./package.json"
@@ -78,7 +88,7 @@
     "examples:build": "vite build --config examples/vite.config.ts"
   },
   "peerDependencies": {
-    "@javaabu/onu": "^0.1.0",
+    "@javaabu/onu": "^0.2.1",
     "react": "^18.3.0 || ^19.0.0",
     "react-dom": "^18.3.0 || ^19.0.0"
   },
@@ -88,16 +98,27 @@
     "@fontsource-variable/inter": "^5.3.0",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/noto-sans-thaana": "^5.3.0",
-    "@javaabu/onu": "^0.1.0",
+    "@javaabu/onu": "^0.2.1",
     "@tailwindcss/vite": "^4.3.3",
+    "@tanstack/react-query": "^5.104.5",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "@testing-library/user-event": "^14.6.8",
+    "@tiptap/core": "^3.32.2",
+    "@tiptap/extension-image": "^3.32.2",
+    "@tiptap/extension-placeholder": "^3.32.2",
+    "@tiptap/extension-table": "^3.32.2",
+    "@tiptap/extension-text-align": "^3.32.2",
+    "@tiptap/pm": "^3.32.2",
+    "@tiptap/react": "^3.32.2",
+    "@tiptap/starter-kit": "^3.32.2",
+    "@tiptap/static-renderer": "^3.32.2",
+    "@tiptap/suggestion": "^3.32.2",
     "@types/node": "^26.6.4",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@vitejs/plugin-react": "^6.1.2",
-    "@vitest/coverage-v8": "^5.1.0",
+    "@vitest/coverage-v8": "^5.0.5",
     "eslint": "^10.12.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
@@ -118,5 +139,13 @@
     "@javaabu/onu": {
       "optional": true
     }
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@javaabu/i18n"
+    ]
+  },
+  "dependencies": {
+    "@javaabu/i18n": "github:Javaabu/i18n#build-on-git-install"
   }
 }

@@ -1,14 +1,15 @@
 "use client"
 
 import * as React from "react"
-import { MapPicker, MapPolygon, MapRadius, type LatLng, type PolygonCollection } from "@javaabu/onu/maps"
 
-import { useFieldValue } from "../context/binding"
-import { useSetting } from "../context/forms-provider"
-import { FieldWrapper, splitFieldProps, useFieldNames, type FieldProps } from "../components/field"
-import { Hidden } from "../components/inputs"
+import type { LatLng } from "../core/adapter"
+import { useFieldValue } from "../core/binding"
+import { useSetting, useUi } from "../core/provider"
+import { useFormsTranslation } from "../core/strings"
 import { isNil } from "../support/data"
 import { parseWktPolygons, toWkt } from "../support/wkt"
+import { splitFieldProps, useField, type FieldProps } from "./field"
+import { Hidden, Latitude, Longitude, Number as NumberField } from "./inputs"
 
 export interface MapInputProps extends Omit<FieldProps, "default"> {
   /** Name of the latitude input. Default `lat`. */
@@ -67,22 +68,9 @@ function pointOf(value: unknown): LatLng | null {
   return lat === null || lng === null ? null : { lat, lng }
 }
 
-function toCollection(wkt: string | null): PolygonCollection | null {
-  const polygons = parseWktPolygons(wkt)
-  if (!polygons.length) return null
-  return {
-    type: "FeatureCollection",
-    features: polygons.map((rings) => ({
-      type: "Feature",
-      properties: {},
-      geometry: { type: "Polygon", coordinates: rings as [number, number][][] },
-    })),
-  }
-}
-
 /**
  * `<x-forms::map-input>`: pick a point, a radius or a boundary on a map
- * (`@javaabu/onu/maps`). Submits `lat`, `lng`, `radius` and `boundary` (WKT)
+ * (from the adapter: `@javaabu/forms/onu/maps` for Onu's maps). Submits `lat`, `lng`, `radius` and `boundary` (WKT)
  * as separate fields, like the Blade component.
  */
 export function MapInput(props: MapInputProps) {
@@ -92,6 +80,7 @@ export function MapInput(props: MapInputProps) {
     lngName = "lng",
     radiusName = "radius",
     polygonName = "boundary",
+    enableCoordinates,
     enableRadius,
     enablePolygon,
     hideInputs,
@@ -110,7 +99,9 @@ export function MapInput(props: MapInputProps) {
     defaultMapCenterLng,
     className,
   } = rest
-  const names = useFieldNames(field)
+  const ui = useUi()
+  const { t } = useFormsTranslation()
+  const f = useField(field)
   const settingLat = useSetting<number>("default_lat")
   const settingLng = useSetting<number>("default_lng")
 
@@ -127,51 +118,85 @@ export function MapInput(props: MapInputProps) {
 
   const [point, setPoint] = React.useState<LatLng | null>(lat !== null && lng !== null ? { lat, lng } : null)
   const [radius, setRadius] = React.useState<number | null>(initialRadius === null ? null : initialRadius * unitFactor)
-  const [polygons, setPolygons] = React.useState<PolygonCollection | null>(() =>
-    toCollection(polygonProp ?? (typeof boundPolygon === "string" ? boundPolygon : null)),
+  const [polygons, setPolygons] = React.useState<number[][][][]>(() =>
+    parseWktPolygons(polygonProp ?? (typeof boundPolygon === "string" ? boundPolygon : null)),
   )
 
   const centerLat = defaultMapCenterLat ?? toNumber(settingLat)
   const centerLng = defaultMapCenterLng ?? toNumber(settingLng)
   const center = centerLat !== null && centerLng !== null ? { lat: centerLat, lng: centerLng } : undefined
-  const common = { id: names.id, name: "", disabled: field.disabled, required: field.required, center, className }
   const round = (n: number, digits: number) => Number(n.toFixed(digits))
+  const mode = enablePolygon ? "polygon" : enableRadius ? "radius" : "point"
+  const disabled = f.disabled || undefined
+  const coordinates = mode !== "polygon" && enableCoordinates !== false && !hideInputs
 
-  let control: React.ReactNode
-  if (enablePolygon) {
-    control = <MapPolygon {...common} multiple={false} value={polygons} onChange={setPolygons} />
-  } else if (enableRadius) {
-    control = (
-      <MapRadius
-        {...common}
-        max={maxRadius}
-        value={point && radius !== null ? { center: point, radius } : null}
-        onChange={(v) => {
-          setPoint(v?.center ?? null)
-          setRadius(v?.radius ?? null)
-        }}
+  return f.wrap(
+    <div className="gap-3 grid">
+      <ui.Map
+        id={f.id}
+        disabled={disabled}
+        className={className}
+        mode={mode}
+        point={point}
+        onPointChange={setPoint}
+        radius={radius}
+        onRadiusChange={setRadius}
+        maxRadius={maxRadius}
+        polygons={polygons}
+        onPolygonsChange={setPolygons}
+        center={center}
       />
-    )
-  } else {
-    control = <MapPicker {...common} coordinates={!hideInputs} value={point} onChange={setPoint} />
-  }
-
-  const wkt = polygons ? toWkt(polygons.features.map((f) => f.geometry.coordinates as number[][][])) : ""
-
-  return (
-    <FieldWrapper {...field} id={names.id} label={names.label}>
-      {control}
-      <Hidden name={latName} value={point ? round(point.lat, 6) : ""} model={false} disabled={field.disabled} />
-      <Hidden name={lngName} value={point ? round(point.lng, 6) : ""} model={false} disabled={field.disabled} />
-      {enableRadius ? (
+      {coordinates ? (
+        <div className="gap-3 grid sm:grid-cols-2">
+          <Latitude
+            name={latName}
+            label={t("latitude")}
+            model={false}
+            disabled={disabled}
+            value={point ? round(point.lat, 6) : null}
+            onValueChange={(n) => setPoint(n === null ? null : { lat: n, lng: point?.lng ?? center?.lng ?? 0 })}
+          />
+          <Longitude
+            name={lngName}
+            label={t("longitude")}
+            model={false}
+            disabled={disabled}
+            value={point ? round(point.lng, 6) : null}
+            onValueChange={(n) => setPoint(n === null ? null : { lat: point?.lat ?? center?.lat ?? 0, lng: n })}
+          />
+        </div>
+      ) : null}
+      {mode === "radius" && !hideInputs ? (
+        <NumberField
+          name={radiusName}
+          label={t("radius")}
+          model={false}
+          min={0}
+          max={maxRadius / unitFactor}
+          decimals={radiusPrecision}
+          append={radiusUnit === "km" ? t("km_abbr") : t("meters_abbr")}
+          disabled={disabled}
+          value={radius === null ? null : round(radius / unitFactor, radiusPrecision)}
+          onValueChange={(n) => setRadius(n === null ? null : n * unitFactor)}
+        />
+      ) : null}
+      {coordinates ? null : (
+        <>
+          <Hidden name={latName} value={point ? round(point.lat, 6) : ""} model={false} disabled={disabled} />
+          <Hidden name={lngName} value={point ? round(point.lng, 6) : ""} model={false} disabled={disabled} />
+        </>
+      )}
+      {mode === "radius" && hideInputs ? (
         <Hidden
           name={radiusName}
           value={radius === null ? "" : round(radius / unitFactor, radiusPrecision)}
           model={false}
-          disabled={field.disabled}
+          disabled={disabled}
         />
       ) : null}
-      {enablePolygon ? <Hidden name={polygonName} value={wkt} model={false} disabled={field.disabled} /> : null}
-    </FieldWrapper>
+      {mode === "polygon" ? (
+        <Hidden name={polygonName} value={polygons.length ? toWkt(polygons) : ""} model={false} disabled={disabled} />
+      ) : null}
+    </div>,
   )
 }

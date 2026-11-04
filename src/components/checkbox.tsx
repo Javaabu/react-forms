@@ -1,19 +1,13 @@
 "use client"
 
 import * as React from "react"
-import {
-  Checkbox as OnuCheckbox,
-  RequiredMarker,
-  useFormFieldControl,
-  type CheckboxProps as OnuCheckboxProps,
-} from "@javaabu/onu"
-
-import { getBoundValue, useBindTarget, useOldInput, type ModelProp } from "../context/binding"
-import { usePublishField } from "../context/registry"
+import { getBoundValue, useBindTarget, useOldInput, type ModelProp } from "../core/binding"
+import { useFormValues } from "../core/form-context"
+import { useUi } from "../core/provider"
+import { usePublishField } from "../core/registry"
 import { isEmpty, isNil, looseIncludes, toFormString, wrap } from "../support/data"
-import { nameToId } from "../support/str"
-import { FieldWrapper, splitFieldProps, useFieldNames, type FieldProps } from "./field"
-import { useSyncedState } from "../support/use-synced-state"
+import { before, nameToId } from "../support/str"
+import { splitFieldProps, useField, useFieldState, useLabelWithMarker, type FieldProps } from "./field"
 
 /**
  * The checked state of a checkbox or radio, in javaabu/forms order:
@@ -51,107 +45,120 @@ export function choiceId(name: string, value: unknown, id?: string) {
   return name.endsWith("[]") ? `${base}-${toFormString(value)}` : base
 }
 
-type OnuControlProps = Omit<
-  OnuCheckboxProps,
-  "name" | "id" | "value" | "defaultChecked" | "checked" | "required" | "disabled" | "label" | "children"
->
-
-export interface CheckboxProps extends Omit<FieldProps, "default">, OnuControlProps {
+export interface CheckboxProps extends Omit<FieldProps, "default"> {
   /** Value submitted when checked. Default `1`. */
   value?: string | number | boolean
   /** Checked when there is no old input and the bound value is `null`. Default `false`. */
   default?: boolean
   /** Controlled checked state. */
   checked?: boolean
+  onCheckedChange?: (checked: boolean) => void
   /** Label beside the box (Blade's default slot). With `inline`, `label` goes in the label column instead. */
   children?: React.ReactNode
+  className?: string
+}
+
+/**
+ * Checkboxes and radios in an Inertia `useForm` store: a group (`channels[]`) holds an
+ * array of the checked values, radios the selected value, a single checkbox its value or `false`.
+ */
+function useChoiceStore(name: string, value: string, kind: "checkbox" | "radio", initial: boolean) {
+  const store = useFormValues()
+  const group = kind === "checkbox" && name.endsWith("[]")
+  const key = group ? before(name, "[]") : name
+
+  React.useEffect(() => {
+    if (!store) return
+    if (group) {
+      store.update(key, (current) => {
+        const list = wrap(current as unknown).map(toFormString)
+        return initial && !list.includes(value) ? [...list, value] : list
+      })
+    } else if (kind === "radio") {
+      if (initial || !store.has(key)) store.update(key, (current) => (initial ? value : (current ?? "")))
+    } else if (!store.has(key)) {
+      store.set(key, initial ? value : false)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [store, key])
+
+  if (!store) return null
+  const raw = store.get(key)
+  const checked = group
+    ? looseIncludes(wrap(raw as unknown), value)
+    : kind === "radio"
+      ? toFormString(raw) === value
+      : !isEmpty(raw)
+  const set = (on: boolean) => {
+    if (group) {
+      store.update(key, (current) => {
+        const list = wrap(current as unknown)
+          .map(toFormString)
+          .filter((v) => v !== value)
+        return on ? [...list, value] : list
+      })
+    } else if (kind === "radio") {
+      if (on) store.set(key, value)
+    } else store.set(key, on ? value : false)
+  }
+  return { checked, set }
 }
 
 /** `<x-forms::checkbox>`: a checkbox with model binding (booleans or arrays of values), old input and errors. */
 export function Checkbox(props: CheckboxProps) {
+  const ui = useUi()
   const { field, rest } = splitFieldProps(props)
-  const { value = 1, checked, onCheckedChange, children, ...checkboxProps } = rest
-  const names = useFieldNames(field)
+  const { value = 1, checked, onCheckedChange, children, className } = rest
+  const submitted = toFormString(value)
   const id = choiceId(field.name, value, field.id)
+  const f = useField({ ...field, controlId: id, labelInControl: !field.inline })
   const initial = useInitialChecked(field.name, field.model, value, field.default)
-  const [current, setCurrent] = useSyncedState(initial)
-  const isChecked = checked ?? current
+  const store = useChoiceStore(field.name, submitted, "checkbox", initial)
+  const [own, setOwn] = useFieldState(field.name, initial, { controlled: checked, key: String(initial), store: false })
+  const current = checked ?? store?.checked ?? own
+  const setCurrent = (on: boolean) => {
+    setOwn(on)
+    store?.set(on)
+  }
 
   usePublishField({
     id,
     name: field.name,
     kind: "checkbox",
-    value: toFormString(value),
-    checked: isChecked,
-    disabled: field.disabled,
+    value: submitted,
+    checked: current,
+    disabled: f.disabled,
+    label: f.labelText,
   })
 
-  const boxLabel = field.inline ? children : (children ?? names.label)
+  const boxLabel = useLabelWithMarker(field.inline ? children : (children ?? f.label), field.required && !field.inline)
 
-  return (
-    <FieldWrapper {...field} id={id} label={field.inline ? names.label : undefined}>
-      <OnuCheckbox
-        {...checkboxProps}
-        key={checked === undefined ? String(initial) : undefined}
-        id={id}
-        name={field.name}
-        value={toFormString(value)}
-        required={field.required || undefined}
-        disabled={field.disabled || undefined}
-        {...(checked === undefined ? { defaultChecked: initial } : { checked })}
-        onCheckedChange={(state) => {
-          setCurrent(state === true)
-          onCheckedChange?.(state)
-        }}
-        label={
-          boxLabel ? (
-            <>
-              {boxLabel}
-              {field.required && !field.inline ? <RequiredMarker /> : null}
-            </>
-          ) : undefined
-        }
-      />
-    </FieldWrapper>
+  return f.wrap(
+    <ui.Checkbox
+      {...f.control}
+      className={className}
+      value={submitted}
+      checked={current}
+      label={boxLabel || undefined}
+      onCheckedChange={(state) => {
+        setCurrent(state)
+        onCheckedChange?.(state)
+      }}
+    />,
   )
 }
 
-export interface RadioProps
-  extends
-    Omit<FieldProps, "default">,
-    Omit<
-      React.ComponentProps<"input">,
-      "name" | "id" | "value" | "type" | "defaultChecked" | "required" | "disabled" | "children"
-    > {
+export interface RadioProps extends Omit<FieldProps, "default"> {
   /** Value submitted when selected. Default `1`. */
   value?: string | number | boolean
   /** Selected when there is no old input and the bound value is `null`. Default `false`. */
   default?: boolean
+  /** Controlled selected state. */
+  checked?: boolean
+  onCheckedChange?: (checked: boolean) => void
   /** Label beside the radio (Blade's default slot). */
   children?: React.ReactNode
-}
-
-function RadioControl({
-  label,
-  marker,
-  ...props
-}: React.ComponentProps<"input"> & { label?: React.ReactNode; marker?: boolean }) {
-  const control = useFormFieldControl(props)
-  return (
-    <div data-slot="radio" className="gap-2 flex items-center">
-      <input
-        {...control}
-        type="radio"
-        className="size-4 shrink-0 cursor-pointer accent-primary disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:outline aria-invalid:outline-destructive"
-      />
-      {label ? (
-        <label htmlFor={control.id} className="text-sm leading-none cursor-pointer select-none">
-          {label}
-          {marker ? <RequiredMarker /> : null}
-        </label>
-      ) : null}
-    </div>
-  )
+  className?: string
 }
 
 /**
@@ -159,51 +166,61 @@ function RadioControl({
  * as in plain HTML; give each a different `value`.
  */
 export function Radio(props: RadioProps) {
+  const ui = useUi()
   const { field, rest } = splitFieldProps(props)
-  const { value = 1, checked, onChange, children, ...inputProps } = rest
-  const names = useFieldNames(field)
+  const { value = 1, checked, onCheckedChange, children, className } = rest
+  const submitted = toFormString(value)
   const id = choiceId(`${field.name}[]`, value, field.id)
+  const f = useField({ ...field, controlId: id, labelInControl: !field.inline })
   const initial = useInitialChecked(field.name, field.model, value, field.default, true)
-  const [current, setCurrent] = useSyncedState(initial)
+  const store = useChoiceStore(field.name, submitted, "radio", initial)
+  const [own, setOwn] = useFieldState(field.name, initial, { controlled: checked, key: String(initial), store: false })
+  const current = checked ?? store?.checked ?? own
+  const setCurrent = (on: boolean) => {
+    setOwn(on)
+    store?.set(on)
+  }
 
   // A radio only reports its own change; listen to the group to see it being unchecked.
   React.useEffect(() => {
     if (typeof document === "undefined") return
     const sync = (event: Event) => {
       const target = event.target as HTMLInputElement
-      if (target.type === "radio" && target.name === field.name && target.id !== id) setCurrent(false)
+      if (target.type === "radio" && target.name === field.name && target.id !== id && target.checked) {
+        setCurrent(false)
+      }
     }
     document.addEventListener("change", sync, true)
     return () => document.removeEventListener("change", sync, true)
-  }, [field.name, id, setCurrent])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [field.name, id])
 
   usePublishField({
     id,
     name: field.name,
     kind: "radio",
-    value: toFormString(value),
-    checked: checked ?? current,
-    disabled: field.disabled,
+    value: submitted,
+    checked: current,
+    disabled: f.disabled,
+    label: f.labelText,
   })
 
-  return (
-    <FieldWrapper {...field} id={id} label={field.inline ? names.label : undefined}>
-      <RadioControl
-        {...inputProps}
-        key={checked === undefined ? String(initial) : undefined}
-        id={id}
-        name={field.name}
-        value={toFormString(value)}
-        required={field.required || undefined}
-        marker={field.required && !field.inline}
-        disabled={field.disabled || undefined}
-        {...(checked === undefined ? { defaultChecked: initial } : { checked })}
-        onChange={(event) => {
-          setCurrent(event.target.checked)
-          onChange?.(event)
-        }}
-        label={field.inline ? children : (children ?? names.label)}
-      />
-    </FieldWrapper>
+  const radioLabel = useLabelWithMarker(
+    field.inline ? children : (children ?? f.label),
+    field.required && !field.inline,
+  )
+
+  return f.wrap(
+    <ui.Radio
+      {...f.control}
+      className={className}
+      value={submitted}
+      checked={current}
+      label={radioLabel || undefined}
+      onCheckedChange={(state) => {
+        if (state) setCurrent(true)
+        onCheckedChange?.(state)
+      }}
+    />,
   )
 }

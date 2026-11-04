@@ -1,16 +1,15 @@
 "use client"
 
 import * as React from "react"
-import { Textarea as OnuTextarea, type TextareaProps as OnuTextareaProps } from "@javaabu/onu"
 
-import { useFieldValue } from "../context/binding"
-import { usePublishField } from "../context/registry"
+import { useFieldValue } from "../core/binding"
+import { useUi } from "../core/provider"
+import { usePublishField } from "../core/registry"
 import { toFormString } from "../support/data"
-import { FieldWrapper, splitFieldProps, useFieldNames, type FieldProps, type PlaceholderProps } from "./field"
-import { useSyncedState } from "../support/use-synced-state"
+import { splitFieldProps, useField, useFieldState, type FieldProps, type PlaceholderProps } from "./field"
 
 type NativeTextareaProps = Omit<
-  OnuTextareaProps,
+  React.ComponentProps<"textarea">,
   "name" | "id" | "value" | "defaultValue" | "placeholder" | "required" | "disabled" | "children"
 >
 
@@ -21,46 +20,43 @@ export interface TextareaProps extends FieldProps, PlaceholderProps, NativeTexta
   value?: string | null
   /** Grow with the content. Default `false`, so `rows` is respected as in Blade. */
   autoResize?: boolean
+  /** Type Thaana from a Latin keyboard. */
+  thaana?: boolean
 }
 
-/**
- * `<x-forms::textarea>`. For a rich text editor use `Wysiwyg` from
- * `@javaabu/forms/editor` (Blade's `wysiwyg` attribute).
- */
+/** `<x-forms::textarea>`. For a rich text editor use `Wysiwyg` (Blade's `wysiwyg` attribute). */
 export function Textarea(props: TextareaProps) {
+  const ui = useUi()
   const { field, rest } = splitFieldProps(props)
-  const { value, placeholder, showPlaceholder, rows = 3, autoResize = false, onChange, ...textareaProps } = rest
-  const names = useFieldNames({ ...field, placeholder, showPlaceholder })
+  const { value, placeholder, showPlaceholder, rows = 3, autoResize = false, thaana, onChange, ...textareaProps } = rest
+  const f = useField({ ...field, placeholder, showPlaceholder })
   const initial = toFormString(useFieldValue(field.name, field.model, field.default))
-  const controlled = value !== undefined
-  const [current, setCurrent] = useSyncedState(initial)
-
-  usePublishField({
-    id: names.id,
-    name: field.name,
-    kind: "value",
-    value: controlled ? toFormString(value) : current,
-    disabled: field.disabled,
+  const [current, setCurrent] = useFieldState(field.name, initial, {
+    controlled: value === undefined ? undefined : toFormString(value),
   })
 
-  return (
-    <FieldWrapper {...field} id={names.id} label={names.label}>
-      <OnuTextarea
-        {...textareaProps}
-        key={controlled ? undefined : initial}
-        id={names.id}
-        name={field.name}
-        rows={rows}
-        autoResize={autoResize}
-        placeholder={names.placeholder}
-        required={field.required || undefined}
-        disabled={field.disabled || undefined}
-        {...(controlled ? { value: toFormString(value) } : { defaultValue: initial })}
-        onChange={(event) => {
-          setCurrent(event.target.value)
-          onChange?.(event)
-        }}
-      />
-    </FieldWrapper>
+  usePublishField({
+    id: f.id,
+    name: field.name,
+    kind: "value",
+    value: current,
+    disabled: f.disabled,
+    label: f.labelText,
+  })
+
+  return f.wrap(
+    <ui.Textarea
+      {...textareaProps}
+      {...f.control}
+      rows={rows}
+      autoResize={autoResize}
+      thaana={thaana}
+      placeholder={f.placeholder}
+      value={current}
+      onChange={(event) => {
+        setCurrent(event.target.value)
+        onChange?.(event)
+      }}
+    />,
   )
 }

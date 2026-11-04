@@ -1,34 +1,21 @@
 "use client"
 
 import * as React from "react"
-import {
-  Button,
-  FileInput,
-  Icon,
-  ImageInput,
-  confirm,
-  readValidationErrors,
-  toast,
-  useOnuForm,
-  type FileInputProps,
-  type ImageInputProps,
-} from "@javaabu/onu"
-
-import { useBindTarget } from "../context/binding"
-import { useCsrfToken, useFormsConfig, useFormsTranslation } from "../context/forms-provider"
-import { usePublishField } from "../context/registry"
+import { useBindTarget } from "../core/binding"
+import { readValidationErrors } from "../core/errors"
+import { useFormState } from "../core/form-context"
+import { useCsrfToken, useFormsConfig, useFormsServices, useUi } from "../core/provider"
+import { usePublishField } from "../core/registry"
+import { useFormsTranslation } from "../core/strings"
 import { wrap } from "../support/data"
 import { mediaUrl, resolveBoundMedia, type ResolvedFile } from "../support/media"
 import { formatFileSize, getAllowedMimeTypes, getExtensions, getMaxFileSize } from "../support/mime-types"
 import { bracketsToDots } from "../support/str"
 import { submitFieldToForm } from "../support/upload"
-import { FieldWrapper, splitFieldProps, useFieldNames, type FieldProps } from "./field"
+import { splitFieldProps, useField, type FieldProps } from "./field"
 import { useSyncedState } from "../support/use-synced-state"
 
-export interface FileProps
-  extends
-    FieldProps,
-    Omit<FileInputProps, "name" | "id" | "value" | "defaultValue" | "required" | "disabled" | "accept" | "maxSize"> {
+export interface FileProps extends FieldProps {
   /** File type(s) from javaabu/helpers `AllowedMimeTypes` (`document`, `image`, `pdf`, …). Default `document`. */
   type?: string | string[]
   /** Allowed mime types. Default: those of `type`. */
@@ -51,6 +38,10 @@ export interface FileProps
   upload?: boolean
   /** After an upload or removal succeeds. Default: reload the page, as in Blade. */
   onUploaded?: (response: unknown) => void
+  /** Allow several files. */
+  multiple?: boolean
+  onChange?: (files: File[]) => void
+  className?: string
 }
 
 /** Accept list, extensions, max size and hint shared by `File` and `Image`. */
@@ -64,9 +55,9 @@ function useFileRules(props: Pick<FileProps, "type" | "mimetypes" | "extensions"
   const list = extensions.map((e) => `.${e}`)
   const types_ =
     list.length > 1
-      ? list.slice(0, -1).join(t("textListSeparator")) + t("textListSeparatorLastGlue") + list.at(-1)
+      ? list.slice(0, -1).join(t("text_list_separator")) + t("text_list_separator_last_glue") + list.at(-1)
       : (list[0] ?? "")
-  const hint = t("fileHint", {
+  const hint = t("file_hint", {
     types: types_,
     size: formatFileSize(maxSize, { kb: t("kb"), mb: t("mb"), gb: t("gb") }),
   })
@@ -87,7 +78,8 @@ function useExistingFile(
 function useFormUpload(name: string, onUploaded?: (response: unknown) => void) {
   const { t } = useFormsTranslation()
   const token = useCsrfToken()
-  const form = useOnuForm()
+  const form = useFormState()
+  const { confirm, notify } = useFormsServices()
   const anchor = React.useRef<HTMLSpanElement>(null)
   const [busy, setBusy] = React.useState<"uploading" | "removing" | null>(null)
 
@@ -102,7 +94,7 @@ function useFormUpload(name: string, onUploaded?: (response: unknown) => void) {
     } catch (error) {
       const payload = await readValidationErrors(error)
       if (payload && form) form.setErrors(payload.errors, payload.message)
-      else toast.error(payload?.message ?? (mode === "uploading" ? t("uploadError") : t("removeError")))
+      else notify(payload?.message ?? (mode === "uploading" ? t("upload_error") : t("remove_error")), { type: "error" })
     } finally {
       setBusy(null)
     }
@@ -110,11 +102,11 @@ function useFormUpload(name: string, onUploaded?: (response: unknown) => void) {
 
   const remove = async () => {
     const ok = await confirm({
-      title: t("areYouSure"),
-      description: t("removeFileConfirm"),
-      confirmLabel: t("removeFileConfirmButton"),
+      title: t("are_you_sure"),
+      description: t("remove_file_confirm"),
+      confirmLabel: t("remove_file_confirm_button"),
       cancelLabel: t("cancel"),
-      variant: "destructive",
+      destructive: true,
     })
     if (ok) await send("", "removing")
   }
@@ -123,17 +115,19 @@ function useFormUpload(name: string, onUploaded?: (response: unknown) => void) {
 }
 
 function ExistingFile({ file }: { file: ResolvedFile }) {
+  const ui = useUi()
   return (
-    <a
+    <ui.Link
       href={file.url}
       target="_blank"
       rel="noopener noreferrer"
       title={file.url}
-      className="gap-2 text-sm inline-flex max-w-full items-center text-primary underline-offset-4 hover:underline"
+      data-forms-existing-file=""
+      className="gap-2 text-sm inline-flex max-w-full items-center"
     >
-      <Icon name="download" size="sm" className="shrink-0" />
+      <ui.Icon name="download" size="sm" className="shrink-0" />
       <bdi className="truncate">{file.fileName || file.url}</bdi>
-    </a>
+    </ui.Link>
   )
 }
 
@@ -142,6 +136,7 @@ function ExistingFile({ file }: { file: ResolvedFile }) {
  * medialibrary `Media`) and shows the allowed types and size.
  */
 function FileComponent(props: FileProps) {
+  const ui = useUi()
   const { field, rest } = splitFieldProps(props)
   const {
     type,
@@ -155,71 +150,68 @@ function FileComponent(props: FileProps) {
     ignoreAccessor,
     upload,
     onUploaded,
+    multiple,
     className,
     onChange,
-    ...inputProps
   } = rest
   const { t } = useFormsTranslation()
-  const names = useFieldNames(field)
   const rules = useFileRules(
     { type, mimetypes: mimetypesProp, extensions: extensionsProp, maxSize: maxSizeProp },
     "document",
   )
+  const help = field.help ?? (showHint ? rules.hint : undefined)
+  const f = useField({ ...field, help })
   const existing = useExistingFile({ ...field, collection, conversion, ignoreAccessor })
   const { anchor, busy, upload: uploadFile, remove: removeFile } = useFormUpload(field.name, onUploaded)
   const [picked, setPicked] = React.useState(false)
 
   usePublishField({
-    id: names.id,
+    id: f.id,
     name: field.name,
     kind: "value",
     value: picked ? "file" : (existing?.url ?? ""),
-    disabled: field.disabled,
+    disabled: f.disabled,
+    label: f.labelText,
   })
 
-  const help = field.help ?? (showHint ? rules.hint : undefined)
-
-  return (
-    <FieldWrapper {...field} id={names.id} label={names.label} help={help}>
-      <span ref={anchor} className="gap-2 flex flex-col">
-        {existing ? <ExistingFile file={existing} /> : null}
-        <span className="gap-2 flex items-start">
-          <FileInput
-            {...inputProps}
-            id={names.id}
-            // An uploading input posts on its own, so it must not be part of the form's submit.
-            name={upload ? "" : field.name}
-            accept={rules.accept}
-            maxSize={rules.maxSize ? rules.maxSize * 1024 : undefined}
-            required={field.required || undefined}
-            disabled={field.disabled || !!busy || undefined}
-            showList={!upload}
-            buttonLabel={
-              upload ? t("fileinputUploadFile") : existing ? t("fileinputChangeFile") : t("fileinputSelectFile")
-            }
-            placeholder={busy ? t(busy) : t("fileinputNothingSelected")}
-            className={[fileInputClass, className].filter(Boolean).join(" ") || undefined}
-            onChange={(files) => {
-              setPicked(files.length > 0)
-              onChange?.(files)
-              if (upload && files[0]) void uploadFile(files[0])
-            }}
-          />
-          {upload && existing && !field.disabled ? (
-            <Button
-              type="button"
-              variant="outline"
-              size="icon"
-              aria-label={t("fileinputRemoveFile")}
-              loading={busy === "removing"}
-              onClick={() => void removeFile()}
-            >
-              <Icon name="close" />
-            </Button>
-          ) : null}
-        </span>
+  return f.wrap(
+    <span ref={anchor} className="gap-2 flex flex-col">
+      {existing ? <ExistingFile file={existing} /> : null}
+      <span className="gap-2 flex items-start">
+        <ui.File
+          {...f.control}
+          // An uploading input posts on its own, so it must not be part of the form's submit.
+          name={upload ? "" : field.name}
+          disabled={f.disabled || !!busy || undefined}
+          accept={rules.accept}
+          maxSize={rules.maxSize ? rules.maxSize * 1024 : undefined}
+          multiple={multiple}
+          showList={!upload}
+          buttonLabel={
+            upload ? t("fileinput_upload_file") : existing ? t("fileinput_change_file") : t("fileinput_select_file")
+          }
+          placeholder={busy ? t(busy) : t("fileinput_nothing_selected")}
+          className={[fileInputClass, className].filter(Boolean).join(" ") || undefined}
+          onFilesChange={(files) => {
+            setPicked(files.length > 0)
+            onChange?.(files)
+            if (upload && files[0]) void uploadFile(files[0])
+          }}
+        />
+        {upload && existing && !f.disabled ? (
+          <ui.Button
+            type="button"
+            color="light"
+            size="icon"
+            aria-label={t("fileinput_remove_file")}
+            loading={busy === "removing"}
+            onClick={() => void removeFile()}
+          >
+            <ui.Icon name="close" />
+          </ui.Button>
+        ) : null}
       </span>
-    </FieldWrapper>
+    </span>,
   )
 }
 
@@ -242,24 +234,7 @@ type FileRuleProps = Pick<
   | "onUploaded"
 >
 
-export interface ImageProps
-  extends
-    FieldProps,
-    FileRuleProps,
-    Omit<
-      ImageInputProps,
-      | "name"
-      | "id"
-      | "value"
-      | "defaultValue"
-      | "required"
-      | "disabled"
-      | "accept"
-      | "maxSize"
-      | "alt"
-      | "placeholder"
-      | "aspectRatio"
-    > {
+export interface ImageProps extends FieldProps, FileRuleProps {
   /** Recommended width in px, shown in the hint. Default `400`. */
   width?: number
   /** Recommended height in px, shown in the hint. Default `400`. */
@@ -276,10 +251,13 @@ export interface ImageProps
   maintainAspectRatio?: boolean
   /** Content of the empty preview. Default: "Click to select an image". */
   icon?: React.ReactNode
+  onChange?: (file: File | null) => void
+  className?: string
 }
 
 /** `<x-forms::image>`: an image input with a preview of the current image. */
 function ImageComponent(props: ImageProps) {
+  const ui = useUi()
   const { field, rest } = splitFieldProps(props)
   const {
     type,
@@ -302,75 +280,72 @@ function ImageComponent(props: ImageProps) {
     icon,
     className,
     onChange,
-    ...inputProps
   } = rest
   const { t } = useFormsTranslation()
-  const names = useFieldNames(field)
   const rules = useFileRules(
     { type, mimetypes: mimetypesProp, extensions: extensionsProp, maxSize: maxSizeProp },
     "image",
   )
+  const help =
+    field.help ??
+    (showHint ? (
+      <>
+        {t("image_hint", { width, height })}
+        <br />
+        {rules.hint}
+      </>
+    ) : undefined)
+  const f = useField({ ...field, help })
   const existing = useExistingFile({ ...field, collection, conversion, ignoreAccessor })
   const { anchor, busy, upload: uploadFile, remove: removeFile } = useFormUpload(field.name, onUploaded)
   const [value, setValue] = useSyncedState<File | string | null>(existing?.url ?? null)
 
   usePublishField({
-    id: names.id,
+    id: f.id,
     name: field.name,
     kind: "value",
     value: value ? "image" : "",
-    disabled: field.disabled,
+    disabled: f.disabled,
+    label: f.labelText,
   })
 
-  // Blade's ratio is height ÷ width (a padding percentage); Onu's is width ÷ height.
+  // Blade's ratio is height ÷ width (a padding percentage); the slot's is width ÷ height.
   const bladeRatio = circle ? 1 : (aspectRatio ?? (width ? height / width : 1))
   const ratio = maintainAspectRatio && bladeRatio ? 1 / bladeRatio : 1
-  const help =
-    field.help ??
-    (showHint ? (
-      <>
-        {t("imageHint", { width, height })}
-        <br />
-        {rules.hint}
-      </>
-    ) : undefined)
 
-  return (
-    <FieldWrapper {...field} id={names.id} label={names.label} help={help}>
-      <span ref={anchor} className="contents">
-        <ImageInput
-          {...inputProps}
-          id={names.id}
-          name={upload ? "" : field.name}
-          alt={names.labelText}
-          accept={rules.accept}
-          maxSize={rules.maxSize ? rules.maxSize * 1024 : undefined}
-          required={field.required || undefined}
-          disabled={field.disabled || !!busy || undefined}
-          shape={circle ? "circle" : undefined}
-          aspectRatio={ratio}
-          placeholder={icon ?? t("imageinputSelectImage")}
-          className={[fullwidth ? "max-w-none" : undefined, className].filter(Boolean).join(" ") || undefined}
-          classNames={cover || circle ? { image: "object-cover" } : undefined}
-          value={value}
-          onChange={(file) => {
-            onChange?.(file)
-            if (!upload) {
-              setValue(file)
-              return
-            }
-            if (file) {
-              setValue(file)
-              void uploadFile(file)
-            } else if (existing) {
-              void removeFile()
-            } else {
-              setValue(null)
-            }
-          }}
-        />
-      </span>
-    </FieldWrapper>
+  return f.wrap(
+    <span ref={anchor} className="contents">
+      <ui.Image
+        {...f.control}
+        name={upload ? "" : field.name}
+        disabled={f.disabled || !!busy || undefined}
+        alt={f.labelText}
+        accept={rules.accept}
+        maxSize={rules.maxSize ? rules.maxSize * 1024 : undefined}
+        shape={circle ? "circle" : "rectangle"}
+        aspectRatio={ratio}
+        cover={cover || circle}
+        fullWidth={fullwidth}
+        placeholder={icon ?? t("imageinput_select_image")}
+        className={className}
+        value={value}
+        onValueChange={(file) => {
+          onChange?.(file)
+          if (!upload) {
+            setValue(file)
+            return
+          }
+          if (file) {
+            setValue(file)
+            void uploadFile(file)
+          } else if (existing) {
+            void removeFile()
+          } else {
+            setValue(null)
+          }
+        }}
+      />
+    </span>,
   )
 }
 

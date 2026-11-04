@@ -1,102 +1,91 @@
 "use client"
 
 import * as React from "react"
-import {
-  DatePicker,
-  DateTimePicker,
-  TimePicker,
-  type DatePickerProps,
-  type DateTimePickerProps,
-  type TimePickerProps,
-} from "@javaabu/onu"
 
-import { useFieldValue } from "../context/binding"
-import { usePublishField } from "../context/registry"
+import type { DateMode } from "../core/adapter"
+import { useFieldValue } from "../core/binding"
+import { useUi } from "../core/provider"
+import { usePublishField } from "../core/registry"
 import { parseDateValue, toDateString, toDateTimeString, toTimeString } from "../support/dates"
-import { FieldWrapper, splitFieldProps, useFieldNames, type FieldProps, type PlaceholderProps } from "./field"
-import { useSyncedState } from "../support/use-synced-state"
+import { splitFieldProps, useField, useFieldState, type FieldProps, type PlaceholderProps } from "./field"
 
-type PickerOwnProps = "name" | "id" | "value" | "defaultValue" | "placeholder" | "required" | "disabled"
-
-interface DateFieldBase extends FieldProps, PlaceholderProps {
+export interface DateProps extends FieldProps, PlaceholderProps {
   /** Controlled value: a `Date`, or a Laravel date string. */
   value?: Date | string | null
-  onChange?: (value: Date | null) => void
+  /** The new value, as submitted (`yyyy-MM-dd`, `yyyy-MM-dd HH:mm:ss` or `HH:mm`), and as a `Date`. */
+  onChange?: (value: string, date: Date | null) => void
+  /** Earliest value: a `Date` or a Laravel date string. */
+  min?: Date | string
+  /** Latest value. */
+  max?: Date | string
+  className?: string
 }
 
-export type DateProps = DateFieldBase & Omit<DatePickerProps, PickerOwnProps | "onChange">
-export type DatetimeProps = DateFieldBase & Omit<DateTimePickerProps, PickerOwnProps | "onChange">
-export type TimeProps = DateFieldBase & Omit<TimePickerProps, PickerOwnProps | "onChange">
+export type DatetimeProps = DateProps
+export type TimeProps = DateProps
 
-type Picker = "date" | "datetime" | "time"
-
-const FORMATTERS: Record<Picker, (d: Date) => string> = {
+const FORMATTERS: Record<DateMode, (d: Date) => string> = {
   date: toDateString,
   datetime: toDateTimeString,
   time: toTimeString,
 }
 
-function DateField({ picker, ...props }: (DateProps | DatetimeProps | TimeProps) & { picker: Picker }) {
-  const { field, rest } = splitFieldProps(props)
-  const { value, onChange, placeholder, showPlaceholder, ...pickerProps } = rest
-  const names = useFieldNames({ ...field, placeholder, showPlaceholder })
-  const raw = useFieldValue(field.name, field.model, field.default)
-  const initial = React.useMemo(() => parseDateValue(raw), [raw])
-  const initialKey = initial ? initial.getTime() : ""
-  const controlled = value !== undefined
-  const [current, setCurrent] = useSyncedState<Date | null>(initial, initialKey)
-  const shown = controlled ? parseDateValue(value) : current
+/** Formats any date value the way the field submits it, or `""`. */
+export function formatDateValue(value: unknown, mode: DateMode): string {
+  const date = parseDateValue(value)
+  return date ? FORMATTERS[mode](date) : ""
+}
 
-  usePublishField({
-    id: names.id,
-    name: field.name,
-    kind: "value",
-    value: shown ? FORMATTERS[picker](shown) : "",
-    disabled: field.disabled,
+function DateField({ mode, ...props }: DateProps & { mode: DateMode }) {
+  const ui = useUi()
+  const { field, rest } = splitFieldProps(props)
+  const { value, onChange, placeholder, showPlaceholder, min, max, className } = rest
+  const f = useField({ ...field, placeholder, showPlaceholder })
+  const raw = useFieldValue(field.name, field.model, field.default)
+  const initial = React.useMemo(() => formatDateValue(raw, mode), [raw, mode])
+  const [current, setCurrent] = useFieldState(field.name, initial, {
+    controlled: value === undefined ? undefined : formatDateValue(value, mode),
   })
 
-  const common = {
-    ...pickerProps,
-    id: names.id,
+  usePublishField({
+    id: f.id,
     name: field.name,
-    placeholder: names.placeholder,
-    required: field.required || undefined,
-    disabled: field.disabled || undefined,
-    ...(controlled ? { value: parseDateValue(value) } : { defaultValue: initial }),
-    onChange: (next: Date | null) => {
-      setCurrent(next)
-      onChange?.(next)
-    },
-  }
+    kind: "value",
+    value: current,
+    disabled: f.disabled,
+    label: f.labelText,
+  })
 
-  return (
-    <FieldWrapper {...field} id={names.id} label={names.label}>
-      <React.Fragment key={controlled ? undefined : String(initialKey)}>
-        {picker === "date" ? (
-          <DatePicker {...(common as DatePickerProps)} />
-        ) : picker === "datetime" ? (
-          <DateTimePicker {...(common as DateTimePickerProps)} />
-        ) : (
-          <TimePicker {...(common as TimePickerProps)} />
-        )}
-      </React.Fragment>
-    </FieldWrapper>
+  return f.wrap(
+    <ui.Date
+      {...f.control}
+      className={className}
+      mode={mode}
+      placeholder={f.placeholder}
+      min={min === undefined ? undefined : formatDateValue(min, mode)}
+      max={max === undefined ? undefined : formatDateValue(max, mode)}
+      value={current}
+      onValueChange={(next) => {
+        setCurrent(next)
+        onChange?.(next, parseDateValue(next))
+      }}
+    />,
   )
 }
 
 /** `<x-forms::date>`: a date picker that submits `yyyy-MM-dd`. */
 function DateComponent(props: DateProps) {
-  return <DateField {...props} picker="date" />
+  return <DateField {...props} mode="date" />
 }
 
-/** `<x-forms::datetime>`: a date and time picker that submits `yyyy-MM-ddTHH:mm:ss`. */
+/** `<x-forms::datetime>`: a date and time picker that submits `yyyy-MM-dd HH:mm:ss`. */
 export function Datetime(props: DatetimeProps) {
-  return <DateField {...props} picker="datetime" />
+  return <DateField {...props} mode="datetime" />
 }
 
 /** `<x-forms::time>`: a time picker that submits `HH:mm`. */
 export function Time(props: TimeProps) {
-  return <DateField {...props} picker="time" />
+  return <DateField {...props} mode="time" />
 }
 
 // Exported as `Date`; named differently here so the global `Date` stays usable.

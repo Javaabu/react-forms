@@ -21,6 +21,8 @@ export interface FieldEntry {
   value: unknown
   checked?: boolean
   disabled?: boolean
+  /** The field's label text, for error summaries. */
+  label?: string
 }
 
 /** What a watcher sees: the effective value and, for a single checkbox, whether it is checked. */
@@ -132,10 +134,22 @@ function lookupDom(selector: string): WatchedField {
   return { value: first.value, checked: !!first.value, found: true }
 }
 
+/** The label of the field with this name (dot or bracket notation), for error summaries. */
+function labelOf(name: string): string | undefined {
+  const dotted = name.replace(/\[(\w*)\]/g, ".$1").replace(/\.+$/, "")
+  for (const entry of entries.values()) {
+    if (!entry.name || !entry.label) continue
+    const own = entry.name.replace(/\[(\w*)\]/g, ".$1").replace(/\.+$/, "")
+    if (own === dotted || (entry.name.endsWith("[]") && dotted.startsWith(`${own}.`))) return entry.label
+  }
+  return undefined
+}
+
 export const registry = {
   subscribe,
   getVersion,
   lookup,
+  labelOf,
   set(key: symbol, entry: FieldEntry) {
     entries.set(key, entry)
     emit()
@@ -176,15 +190,15 @@ export const registry = {
 /** Publishes a field to the registry while it is mounted. */
 export function usePublishField(entry: FieldEntry | null) {
   const key = React.useMemo(() => Symbol("field"), [])
-  const { id, name, kind, value, checked, disabled } = entry ?? { kind: "value" as const, value: undefined }
+  const { id, name, kind, value, checked, disabled, label } = entry ?? { kind: "value" as const, value: undefined }
   const active = entry !== null
   const serialized = Array.isArray(value) ? JSON.stringify(value) : value
 
   React.useEffect(() => {
     if (!active) return
-    registry.set(key, { id, name, kind, value, checked, disabled })
+    registry.set(key, { id, name, kind, value, checked, disabled, label })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, active, id, name, kind, serialized, checked, disabled])
+  }, [key, active, id, name, kind, serialized, checked, disabled, label])
 
   React.useEffect(() => () => registry.delete(key), [key])
 }

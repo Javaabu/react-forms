@@ -14,8 +14,10 @@ const isExternal = (id: string) =>
 /** Library entry points, mirrored by package.json `exports`. */
 export const entries: Record<string, string> = {
   index: "src/index.ts",
-  "editor/index": "src/editor/index.tsx",
-  "maps/index": "src/maps/index.tsx",
+  html: "src/html.ts",
+  onu: "src/onu.ts",
+  "onu-editor": "src/onu-editor.ts",
+  "onu-maps": "src/onu-maps.ts",
 }
 
 const output = {

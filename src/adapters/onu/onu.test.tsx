@@ -1,16 +1,34 @@
-import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react"
+import * as React from "react"
+import {
+  act,
+  fireEvent,
+  render as rtlRender,
+  screen,
+  waitFor,
+  within,
+  type RenderOptions,
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 
-import { FormsProvider } from "../context/forms-provider"
-import { Model } from "../context/binding"
-import { Checkbox, Radio } from "./checkbox"
-import { ConditionalWrapper, TextEntry } from "./display"
-import { File } from "./files"
-import { Form } from "./form"
-import { Email, Hidden, Input, Password, Text } from "./inputs"
-import { Table, TableCell, TableRow } from "./listing"
-import { Select, Select2 } from "./select"
-import { Textarea } from "./textarea"
+import { FormsProvider } from "../../core/provider"
+import { Model } from "../../core/binding"
+import { Checkbox, Radio } from "../../components/checkbox"
+import { ConditionalWrapper, TextEntry } from "../../components/display"
+import { File } from "../../components/files"
+import { Form } from "../../components/form"
+import { Email, Hidden, Input, Password, Text } from "../../components/inputs"
+import { Table, TableCell, TableRow } from "../../components/listing"
+import { Select, Select2 } from "../../components/select"
+import { Textarea } from "../../components/textarea"
+import { onu } from "."
+
+/** Every component test here renders through the Onu adapter. */
+function render(ui: React.ReactElement, options?: RenderOptions) {
+  return rtlRender(ui, {
+    wrapper: ({ children }) => <FormsProvider ui={onu}>{children}</FormsProvider>,
+    ...options,
+  })
+}
 
 function formData(container: HTMLElement) {
   return new FormData(container.querySelector("form")!)
@@ -235,7 +253,7 @@ describe("ConditionalWrapper", () => {
         </ConditionalWrapper>
       </Form>,
     )
-    const section = document.querySelector("[data-slot=conditional-display]")!
+    const section = document.querySelector("[data-slot=conditional-wrapper]")!
     expect(section).toHaveAttribute("data-state", "hidden")
     await userEvent.type(screen.getByLabelText("Type"), "quiz")
     await waitFor(() => expect(section).toHaveAttribute("data-state", "enabled"))
@@ -250,7 +268,7 @@ describe("ConditionalWrapper", () => {
         </ConditionalWrapper>
       </Form>,
     )
-    const section = document.querySelector("[data-slot=conditional-display]")!
+    const section = document.querySelector("[data-slot=conditional-wrapper]")!
     expect(section).toHaveAttribute("data-state", "enabled")
     await userEvent.click(screen.getByRole("checkbox", { name: "Online" }))
     await waitFor(() => expect(section).toHaveAttribute("data-state", "disabled"))

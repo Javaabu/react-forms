@@ -1,13 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { StatusBadge } from "@javaabu/onu"
-
-import { useFormsTranslation } from "../context/forms-provider"
+import type { StatusTone } from "../core/adapter"
+import { useUi } from "../core/provider"
+import { useFormsTranslation } from "../core/strings"
 import { isNil } from "../support/data"
 
 /** Bootstrap colours (`getColor()` of a status enum) mapped to Onu status tones. */
-export function colorToTone(color: string | undefined) {
+export function colorToTone(color: string | undefined): StatusTone {
   switch (color) {
     case "success":
       return "success"
@@ -55,11 +55,12 @@ export interface FormattedValueProps {
  * they have a colour), booleans Yes / No, empty values "-", arrays a list.
  */
 export function FormattedValue({ value, multiline, wysiwyg, arrays = "list" }: FormattedValueProps) {
+  const ui = useUi()
   const { t } = useFormsTranslation()
 
   if (React.isValidElement(value)) return value
   if (isEnumLike(value)) {
-    return value.color ? <StatusBadge status={colorToTone(value.color)}>{value.label}</StatusBadge> : <>{value.label}</>
+    return value.color ? <ui.Status tone={colorToTone(value.color)}>{value.label}</ui.Status> : <>{value.label}</>
   }
   if (typeof value === "boolean") return <>{value ? t("yes") : t("no")}</>
   if (Array.isArray(value)) {
@@ -69,7 +70,7 @@ export function FormattedValue({ value, multiline, wysiwyg, arrays = "list" }: F
         <>
           {value.map((item, i) => (
             <React.Fragment key={i}>
-              {i > 0 ? t("tableArraySeparator") : null}
+              {i > 0 ? t("table_array_separator") : null}
               {itemLabel(item)}
             </React.Fragment>
           ))}

@@ -4,7 +4,7 @@ import * as React from "react"
 
 import { bracketsToDots } from "../support/str"
 import { dataGet, dataHas, isNil } from "../support/data"
-import { useFormsConfig } from "./forms-provider"
+import { useFormsConfig } from "./provider"
 
 /**
  * A field's `model` prop: an object to read values from, `false` to ignore the
