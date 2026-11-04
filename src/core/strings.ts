@@ -13,18 +13,23 @@ export const STRINGS_PREFIX = "forms::strings."
 export type FormsMessageKey = keyof FormsMessages
 export type Replace = Record<string, string | number>
 
+function languageOf(locale: string): string {
+  return locale.split(/[-_]/)[0]?.toLowerCase() ?? "en"
+}
+
 /** The bundled line for a locale (`dv`, `dv_MV`, `en-GB`), falling back to English. */
 export function bundledLine(key: FormsMessageKey, locale: string): string {
-  const code = locale.split(/[-_]/)[0]?.toLowerCase() ?? "en"
-  return (locales[code] ?? en)[key] ?? en[key]
+  return (locales[languageOf(locale)] ?? en)[key] ?? en[key]
 }
 
 /**
  * The package strings and the label translator, through `@javaabu/i18n`.
  *
- * `t("nothing_selected")` looks up `forms::strings.nothing_selected`. Lines your app
- * loads (e.g. `lang/vendor/forms/dv/strings.php` through js-localization) win; the
- * bundled `en` / `dv` lines are the fallback. `translate("Company Name")` is `__()`,
+ * `t("nothing_selected")` looks up `forms::strings.nothing_selected`, in this order:
+ * 1. a line your app loaded for the current locale (`lang/vendor/forms/dv/strings.php`);
+ * 2. the bundled line for the current locale (`en`, `dv`);
+ * 3. your app's line for the fallback locale;
+ * 4. the bundled English line. `translate("Company Name")` is `__()`,
  * like Blade's `trans()` on generated labels, unless `FormsProvider translate` is set.
  */
 export function useFormsTranslation() {
@@ -34,8 +39,11 @@ export function useFormsTranslation() {
   const t = React.useCallback(
     (key: FormsMessageKey, replace: Replace = {}): string => {
       const full = STRINGS_PREFIX + key
+      if (has(full, null, false)) return String(__(full, replace))
+      const bundled = locales[languageOf(locale)]
+      if (bundled) return makeReplacements(bundled[key], replace)
       if (has(full)) return String(__(full, replace))
-      return makeReplacements(bundledLine(key, locale), replace)
+      return makeReplacements(en[key], replace)
     },
     [__, has, locale],
   )

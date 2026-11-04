@@ -505,9 +505,9 @@ export function FilterSubmit({
           </ui.Button>
           {keys.length > 1 ? (
             <ui.ActionMenu
-              label={t("export")}
+              label={t("export_options")}
               trigger={
-                <ui.Button type="button" color="secondary" size="icon" aria-label={t("export")}>
+                <ui.Button type="button" color="secondary" size="icon" aria-label={t("export_options")}>
                   <ui.Icon name="chevron-down" />
                 </ui.Button>
               }
@@ -690,7 +690,7 @@ export function Pagination({ paginator, getPageHref, onPageChange, className }: 
           disabled={!p.prev_page_url}
           startIcon="chevron-left"
         >
-          {t("previous")}
+          {t("pagination_previous")}
         </LinkButton>
         <LinkButton
           url={p.next_page_url ?? undefined}
@@ -698,7 +698,7 @@ export function Pagination({ paginator, getPageHref, onPageChange, className }: 
           disabled={!p.next_page_url}
           endIcon="chevron-right"
         >
-          {t("next")}
+          {t("pagination_next")}
         </LinkButton>
       </nav>
     )

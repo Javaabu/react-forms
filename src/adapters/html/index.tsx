@@ -1025,13 +1025,15 @@ function Pagination({ currentPage, lastPage, hrefFor, onPageChange, className }:
   return (
     <nav data-slot="pagination" aria-label={t("pagination")} className={className}>
       <ul>
-        <li>{item(currentPage - 1, <ui.Icon name="chevron-left" />, t("previous"), currentPage <= 1)}</li>
+        <li>{item(currentPage - 1, <ui.Icon name="chevron-left" />, t("pagination_previous"), currentPage <= 1)}</li>
         {pageWindow(currentPage, lastPage).map((page, i) => (
           <li key={page ?? `gap-${i}`}>
             {page === null ? "…" : item(page, page, t("page", { page }), false, page === currentPage)}
           </li>
         ))}
-        <li>{item(currentPage + 1, <ui.Icon name="chevron-right" />, t("next"), currentPage >= lastPage)}</li>
+        <li>
+          {item(currentPage + 1, <ui.Icon name="chevron-right" />, t("pagination_next"), currentPage >= lastPage)}
+        </li>
       </ul>
     </nav>
   )

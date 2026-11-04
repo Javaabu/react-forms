@@ -46,8 +46,9 @@ export const en = {
   no_items_message: "Let's create some new :model_type.",
   items: "items",
   pagination: "Pagination",
-  previous: "Previous",
-  next: "Next",
+  pagination_previous: "Previous",
+  pagination_next: "Next",
+  export_options: "More export options",
   sort_by: "Sort by :label",
 
   // js-utilities messages
