@@ -9,13 +9,26 @@ const pkg = JSON.parse(readFileSync(new URL("./package.json", import.meta.url), 
 }
 const externals = [...Object.keys(pkg.dependencies ?? {}), ...Object.keys(pkg.peerDependencies ?? {})]
 const isExternal = (id: string) =>
-  externals.some((dep) => id === dep || id.startsWith(`${dep}/`)) || /^(react|react-dom)(\/|$)/.test(id)
+  externals.some((dep) => id === dep || id.startsWith(`${dep}/`)) ||
+  /^(react|react-dom|@testing-library\/react)(\/|$)/.test(id)
 
 /** Library entry points, mirrored by package.json `exports`. */
-const entries = {
+export const entries: Record<string, string> = {
   index: "src/index.ts",
-  "editor/index": "src/editor/index.tsx",
-  "maps/index": "src/maps/index.tsx",
+  html: "src/html.ts",
+  onu: "src/onu.ts",
+  "onu-editor": "src/onu-editor.ts",
+  "onu-maps": "src/onu-maps.ts",
+  testing: "src/testing.ts",
+  inertia: "src/inertia.ts",
+  shadcn: "src/shadcn.ts",
+}
+
+const output = {
+  preserveModules: true,
+  preserveModulesRoot: "src",
+  // Every module may run on the client; mark them for React Server Components.
+  banner: '"use client";',
 }
 
 export default defineConfig({
@@ -27,18 +40,14 @@ export default defineConfig({
     sourcemap: true,
     minify: false,
     lib: {
-      entry: Object.fromEntries(Object.entries(entries).map(([k, v]) => [k, resolve(__dirname, v)])),
-      formats: ["es"],
+      entry: Object.fromEntries(Object.entries(entries).map(([k, v]) => [k, resolve(import.meta.dirname, v)])),
     },
     rollupOptions: {
       external: isExternal,
-      output: {
-        preserveModules: true,
-        preserveModulesRoot: "src",
-        entryFileNames: "[name].js",
-        // Every module may run on the client; mark them for React Server Components.
-        banner: '"use client";',
-      },
+      output: [
+        { ...output, format: "es" as const, entryFileNames: "[name].js" },
+        { ...output, format: "cjs" as const, entryFileNames: "[name].cjs", exports: "named" as const },
+      ],
     },
   },
 })

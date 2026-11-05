@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { ChoiceOption } from "@javaabu/onu"
+import type { SelectOption as ChoiceOption } from "../core/adapter"
 
 import { isEmpty, toFormString } from "../support/data"
 import { normalizeOptions } from "../support/options"

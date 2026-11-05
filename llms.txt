@@ -1,0 +1,59 @@
+# @javaabu/forms
+
+> The React version of the javaabu/forms Laravel Blade components: the same components and attributes, model binding, old input, Laravel validation errors, Inertia and Wayfinder support, English and Dhivehi strings, and RTL. Components render through a UI adapter: Onu, shadcn/ui, plain HTML, or your own.
+
+Paths are relative to this file. In a project, that's node_modules/@javaabu/forms/.
+
+## Rules
+
+- Import components from `@javaabu/forms`. Set the UI adapter once, at the root: `<FormsProvider ui={onu}>` (`onu` from `@javaabu/forms/onu`), `createShadcnAdapter({...})` from `@javaabu/forms/shadcn`, or nothing for plain HTML.
+- Use the Blade component names and attributes: `<x-forms::select2 name="country" relation />` is `<Select2 name="country" relation />`. Attributes are camelCase props, named slots are props (`help`, `prepend`), the default slot is `children`.
+- Let names do the work. Don't pass `id` or `label` unless they differ from what the name gives (`address[city]` → id `address-city`, label "Address City", translated with `__()`).
+- Bind data with `<Form model={user}>` (or `<Model>`), not `value`. Values come from old input, then the model, then `default`. Pass `value` only for a controlled field, with its change handler.
+- Use bracket names for nested and array fields, as in Blade: `address[city]`, `items[0][name]`, `channels[]` for checkbox groups, `tags[]` (or `multiple`) for multi-selects.
+- Don't render validation errors yourself. Fields show their own errors, from Inertia page props, `useForm()`, a 422 response, `Form errors` or `FormsProvider errors`. Use `errorBag` for named bags and `<Errors name>` or `<ErrorSummary>` only for extra placements.
+- With Inertia, set `router={inertia}` (from `@javaabu/forms/inertia`) on the root `FormsProvider`, then use plain forms: `<Form model={user} action={update}>`. Or pass `useForm()` to `<Form form={form}>`. Don't wire `onSubmit`, `errors` or `processing` by hand for Inertia.
+- Use Wayfinder routes as `action`: `action={store()}`, or the route function itself, `action={update}`, which is called with the form's `model`. The method comes from the route; `PUT`/`PATCH`/`DELETE` are spoofed with `_method`.
+- File inputs need `<Form files>`. Don't nest forms.
+- Add `thaana` to free-text fields that take Dhivehi. Never hard-code user-facing English: use `__()` from `@javaabu/i18n` for your labels. Package strings are `forms::strings.*`, changed in `lang/vendor/forms/{locale}/strings.php`.
+- Use logical CSS (`ms-`, `pe-`, `start-`, `text-start`), never `left`/`right`, so pages work in RTL.
+- For a field component of your own (or another package's), use `splitFieldProps`, `useField`, `useFieldValue`, `useFieldState` and `usePublishField` (see Custom fields), not `value`/`onChange` bound by hand.
+- Button icons (`startIcon`, `endIcon`) and `Icon` take Blade's icon names (`pencil`, `trash-2`, `eye`, `check`, …) or icon font classes.
+- To change how one component looks, replace its slot (`<FormsProvider components={{ Select: MySelect }}>`) instead of wrapping or forking the component. To support a new UI kit, write an adapter and run `testAdapter()` from `@javaabu/forms/testing`.
+
+## Docs
+
+- [Introduction](docs/intro.md): what the package does
+- [Requirements](docs/requirements.md): versions and optional peers
+- [Installation and setup](docs/installation-and-setup.md): installing, adapters, FormsProvider, Laravel and Inertia setup
+- [Forms and buttons](docs/basic-usage/forms-and-buttons.md): Form, method spoofing, CSRF, submit modes, buttons
+- [Model binding](docs/basic-usage/model-binding.md): value precedence, Model, old input, checkboxes, selects, dates
+- [Inputs and textarea](docs/basic-usage/inputs-and-textarea.md): Text, Email, Password, Number, Tel, Url, Hidden, Textarea, shared field props
+- [Checkboxes and radios](docs/basic-usage/checkbox-and-radio.md): single boxes, groups, radios
+- [Selects](docs/basic-usage/select-elements.md): Select, options shapes, relations, multiple, sync fields
+- [Select2](docs/basic-usage/select2.md): search, ajax, cascading selects, fallbacks, tags
+- [Dates](docs/basic-usage/dates.md): Date, Datetime, Time and their formats
+- [Files and images](docs/basic-usage/file-inputs.md): File, FileUpload, Image, ImageUpload, media binding, upload rules
+- [WYSIWYG](docs/basic-usage/wysiwyg.md): the rich text editor
+- [Map input](docs/basic-usage/map-input.md): points, radius, polygons
+- [Conditional wrapper](docs/basic-usage/conditional-wrapper.md): enabling and showing sections from another field
+- [Display](docs/basic-usage/display.md): Alert, Card, Accordion, Tabs, Modal, Status, text entries, Infolist
+- [Listing pages](docs/basic-usage/listing.md): Table, bulk actions, reading the selection (useTableSelection), filters, per page, search, no items, pagination
+- [Icons](docs/basic-usage/icons.md): Blade's bundled icon names on buttons and Icon, icon fonts, how adapters draw them
+- [Validation errors](docs/basic-usage/errors.md): sources, keys, bags, the summary, accessibility
+- [Translations](docs/basic-usage/translations.md): @javaabu/i18n, overriding lines, generated labels, every key
+- [UI adapters](docs/advanced-usage/adapters.md): choosing, replacing components, writing and testing an adapter, every slot
+- [shadcn/ui](docs/advanced-usage/shadcn.md): createShadcnAdapter and the components it needs
+- [Custom fields](docs/advanced-usage/custom-fields.md): field components of your own that plug into Form (useForm() data, reset, ConditionalWrapper, errors)
+- [Inertia](docs/advanced-usage/inertia.md): the Inertia router, useForm(), links, fetchRouter, custom routers
+- [Laravel Wayfinder](docs/advanced-usage/wayfinder.md): routes as Form action
+- [Dhivehi and RTL](docs/advanced-usage/dhivehi-and-rtl.md): direction, Thaana typing, fonts, lines to review
+- [API reference](docs/api-reference.md): entry points, components, hooks, helpers, types
+- [Migrating from Blade](docs/migrating-from-blade.md): component mapping, Laravel values in React, differences
+- [Upgrading from @javaabu/react-forms](docs/upgrading.md): 0.x to 1.0
+- [Parity with javaabu/forms](docs/parity.md): every component and attribute against Blade v2
+- [AI assistants](docs/ai-assistants.md): Laravel Boost and other assistants
+- [Questions and Security](docs/questions-and-security.md): where to get help
+- [Changelog](docs/changelog.md): where changes are listed
+- [About Us](docs/about-us.md): Javaabu
+- [Contributing to the docs](docs/contributing-to-docs.md): how the docs are built

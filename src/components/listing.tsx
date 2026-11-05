@@ -1,27 +1,9 @@
 "use client"
 
 import * as React from "react"
-import {
-  ActionMenu,
-  Button as OnuButton,
-  ButtonGroup as OnuButtonGroup,
-  Checkbox as OnuCheckbox,
-  EmptyState,
-  Icon,
-  Pagination as OnuPagination,
-  Table as OnuTable,
-  TableBody,
-  TableCell as OnuTableCell,
-  TableHead,
-  TableHeader,
-  TableRow as OnuTableRow,
-  cn,
-  type LaravelPaginationMeta,
-  type LaravelResourceCollection,
-} from "@javaabu/onu"
-
-import { getBoundValue, Model, useBindTarget, useBoundModel, type ModelProp } from "../context/binding"
-import { useFormsTranslation, useSetting } from "../context/forms-provider"
+import { getBoundValue, Model, useBindTarget, useBoundModel, type ModelProp } from "../core/binding"
+import { useSetting, useUi } from "../core/provider"
+import { useFormsTranslation } from "../core/strings"
 import { isNil, toFormString } from "../support/data"
 import { nameToLabel } from "../support/str"
 import { Button, LinkButton } from "./buttons"
@@ -30,6 +12,27 @@ import { Form, type FormProps } from "./form"
 import { FormattedValue } from "./format"
 import { Hidden, Input } from "./inputs"
 import { Select2 } from "./select"
+
+/** Joins class names, skipping empty ones. */
+function cn(...classes: Array<string | false | null | undefined>) {
+  return classes.filter(Boolean).join(" ") || undefined
+}
+
+/** A Laravel length-aware paginator as JSON (`$users->toArray()`), or its `meta`. */
+export interface LaravelPaginationMeta {
+  current_page: number
+  last_page: number
+  per_page?: number
+  total?: number
+  from?: number | null
+  to?: number | null
+}
+
+/** An API resource collection: `{ data, meta, links }`. */
+export interface LaravelResourceCollection {
+  data?: unknown[]
+  meta: LaravelPaginationMeta
+}
 
 /** The current URL's query string (empty on the server). */
 function currentQuery(): URLSearchParams {
@@ -52,16 +55,40 @@ function submitWith(form: HTMLFormElement | null | undefined, name: string, valu
 /* Table                                                                      */
 /* -------------------------------------------------------------------------- */
 
-interface TableContextValue {
+/** The row selection of the surrounding `Table`, from `useTableSelection()`. */
+export interface TableSelection {
+  /** The table's `model`: the rows' checkboxes submit `<model>[]`. */
   model: string
+  /** Ids of the checked rows. */
+  selected: ReadonlySet<string>
+  /** Ids of the rows that have an enabled checkbox (the rows on this page). */
+  rows: ReadonlySet<string>
+  /** Replaces the selection, e.g. `setSelected([])` to clear it or `setSelected(rows)` to select the page. */
+  setSelected: (ids: Iterable<string>) => void
+}
+
+interface TableContextValue extends TableSelection {
   noCheckbox: boolean
   filterId: string
-  selected: ReadonlySet<string>
   toggle: (id: string, checked: boolean) => void
   register: (id: string) => () => void
 }
 
 const TableContext = React.createContext<TableContextValue | null>(null)
+
+/**
+ * The row selection of the surrounding `Table`, for content rendered inside it
+ * (its `bulkForm`, `beforeTable`, rows, …): "3 selected", "select all 1,234".
+ * `null` outside a table.
+ */
+export function useTableSelection(): TableSelection | null {
+  const table = React.useContext(TableContext)
+  return React.useMemo(
+    () =>
+      table ? { model: table.model, selected: table.selected, rows: table.rows, setSelected: table.setSelected } : null,
+    [table],
+  )
+}
 
 export interface TableProps extends Omit<React.ComponentProps<"div">, "children"> {
   /** Name of the rows' checkboxes (`<model>[]`) and of the select-all group. */
@@ -121,24 +148,23 @@ export function Table({
   className,
   ...props
 }: TableProps) {
+  const ui = useUi()
   const { t } = useFormsTranslation()
   const [selected, setSelected] = React.useState<Set<string>>(() => new Set())
   const [all, setAll] = React.useState<Set<string>>(() => new Set())
 
-  const ctx = React.useMemo<TableContextValue>(
+  // Stable callbacks: rows register in an effect that depends on `register`.
+  const actions = React.useMemo(
     () => ({
-      model,
-      noCheckbox,
-      filterId,
-      selected,
-      toggle: (id, checked) =>
+      setSelected: (ids: Iterable<string>) => setSelected(new Set(ids)),
+      toggle: (id: string, checked: boolean) =>
         setSelected((prev) => {
           const next = new Set(prev)
           if (checked) next.add(id)
           else next.delete(id)
           return next
         }),
-      register: (id) => {
+      register: (id: string) => {
         setAll((prev) => new Set(prev).add(id))
         return () =>
           setAll((prev) => {
@@ -148,7 +174,12 @@ export function Table({
           })
       },
     }),
-    [model, noCheckbox, filterId, selected],
+    [],
+  )
+
+  const ctx = React.useMemo<TableContextValue>(
+    () => ({ model, noCheckbox, filterId, selected, rows: all, ...actions }),
+    [model, noCheckbox, filterId, selected, all, actions],
   )
 
   const allChecked = all.size > 0 && [...all].every((id) => selected.has(id))
@@ -156,36 +187,39 @@ export function Table({
   const toggleAll = (checked: boolean) => setSelected(checked ? new Set(all) : new Set())
 
   const table = (
-    <TableContext.Provider value={ctx}>
+    <>
       {beforeTable}
-      <OnuTable
+      <ui.Table
         data-form-sortable={`#${filterId}`}
+        data-striped={striped || undefined}
         className={cn(striped && "[&_tbody_tr:nth-child(odd)]:bg-muted/50", tableClass)}
       >
-        <TableHeader>
+        <ui.TableHeader>
           {beforeHeaders}
-          <OnuTableRow>
+          <ui.TableRow>
             {noCheckbox ? null : (
-              <TableHead className="w-10">
-                <OnuCheckbox
-                  aria-label={t("selectAll")}
+              <ui.TableHead className="w-10">
+                <ui.Checkbox
+                  name=""
+                  value=""
+                  aria-label={t("select_all")}
                   checked={allChecked ? true : someChecked ? "indeterminate" : false}
-                  onCheckedChange={(state) => toggleAll(state === true)}
+                  onCheckedChange={(state) => toggleAll(state)}
                 />
-              </TableHead>
+              </ui.TableHead>
             )}
             {headers}
-          </OnuTableRow>
+          </ui.TableRow>
           {afterHeaders}
-        </TableHeader>
-        <TableBody>{rows ?? children}</TableBody>
+        </ui.TableHeader>
+        <ui.TableBody>{rows ?? children}</ui.TableBody>
         {afterTbody}
-      </OnuTable>
-    </TableContext.Provider>
+      </ui.Table>
+    </>
   )
 
   return (
-    <>
+    <TableContext.Provider value={ctx}>
       <div data-slot="forms-table" className={cn("w-full overflow-x-auto", className)} {...props}>
         {!noBulk && bulkForm ? (
           <Form {...bulkFormProps} action={bulkFormAction} summary={bulkFormProps?.summary ?? false}>
@@ -197,7 +231,7 @@ export function Table({
         )}
       </div>
       {noPagination ? null : pagination}
-    </>
+    </TableContext.Provider>
   )
 }
 
@@ -224,6 +258,7 @@ export function TableRow({
   children,
   ...props
 }: TableRowProps) {
+  const ui = useUi()
   const { t } = useFormsTranslation()
   const table = React.useContext(TableContext)
   const bound = useBoundModel()
@@ -234,6 +269,7 @@ export function TableRow({
   const generated = React.useId().replace(/:/g, "")
   const id = rowId || `${checkboxName ? `${checkboxName}-` : ""}${key || generated}-row`
   const register = table?.register
+  const [own, setOwn] = React.useState(false)
 
   React.useEffect(() => {
     if (!register || hideCheckbox || disableCheckbox || !key) return
@@ -241,22 +277,22 @@ export function TableRow({
   }, [register, hideCheckbox, disableCheckbox, key])
 
   const row = (
-    <OnuTableRow id={id} data-state={table?.selected.has(key) ? "selected" : undefined} {...props}>
+    <ui.TableRow id={id} data-state={table?.selected.has(key) ? "selected" : undefined} {...props}>
       {hideCheckbox ? null : (
-        <OnuTableCell className="w-10">
-          <OnuCheckbox
+        <ui.TableCell className="w-10">
+          <ui.Checkbox
             id={`${id}-check`}
             name={`${checkboxName}[]`}
             value={key}
             disabled={disableCheckbox}
-            aria-label={t("selectRow", { name: key })}
-            checked={table ? table.selected.has(key) : undefined}
-            onCheckedChange={(state) => table?.toggle(key, state === true)}
+            aria-label={t("select_row", { name: key })}
+            checked={table ? table.selected.has(key) : own}
+            onCheckedChange={(state) => (table ? table.toggle(key, state) : setOwn(state))}
           />
-        </OnuTableCell>
+        </ui.TableCell>
       )}
       {children}
-    </OnuTableRow>
+    </ui.TableRow>
   )
 
   return model !== undefined ? <Model model={model}>{row}</Model> : row
@@ -284,13 +320,14 @@ export function TableCell({
   children,
   ...props
 }: TableCellProps) {
+  const ui = useUi()
   const { translate } = useFormsTranslation()
   const target = useBindTarget(model)
   const shown = value !== undefined ? value : name ? getBoundValue(target, name) : ""
   return (
-    <OnuTableCell data-col={showLabel && name ? (label ?? translate(nameToLabel(name))) : undefined} {...props}>
+    <ui.TableCell data-col={showLabel && name ? (label ?? translate(nameToLabel(name))) : undefined} {...props}>
       {children ?? <FormattedValue value={shown} multiline={multiline} arrays="inline" />}
-    </OnuTableCell>
+    </ui.TableCell>
   )
 }
 
@@ -307,6 +344,7 @@ export interface TableHeadingProps extends Omit<React.ComponentProps<"th">, "chi
  * form's `orderby` / `order` and submit it (or update the URL without a form).
  */
 export function TableHeading({ label, colSpan, sortable, name, children, className, ...props }: TableHeadingProps) {
+  const ui = useUi()
   const { t } = useFormsTranslation()
   const table = React.useContext(TableContext)
   const field = sortable || name
@@ -317,9 +355,9 @@ export function TableHeading({ label, colSpan, sortable, name, children, classNa
 
   if (!field) {
     return (
-      <TableHead colSpan={colSpan} className={className} {...props}>
+      <ui.TableHead colSpan={colSpan} className={className} {...props}>
         {content}
-      </TableHead>
+      </ui.TableHead>
     )
   }
 
@@ -349,7 +387,7 @@ export function TableHeading({ label, colSpan, sortable, name, children, classNa
   }
 
   return (
-    <TableHead
+    <ui.TableHead
       colSpan={colSpan}
       aria-sort={active ? (order === "DESC" ? "descending" : "ascending") : "none"}
       data-sort-field={field}
@@ -359,17 +397,17 @@ export function TableHeading({ label, colSpan, sortable, name, children, classNa
       <button
         type="button"
         onClick={sort}
-        aria-label={typeof content === "string" ? t("sortBy", { label: content }) : undefined}
+        aria-label={typeof content === "string" ? t("sort_by", { label: content }) : undefined}
         className="gap-1 font-medium inline-flex items-center hover:text-foreground"
       >
         {content}
-        <Icon
+        <ui.Icon
           name={active ? (order === "DESC" ? "chevron-down" : "chevron-up") : "chevrons-up-down"}
           size="sm"
           className={cn(!active && "opacity-40")}
         />
       </button>
-    </TableHead>
+    </ui.TableHead>
   )
 }
 
@@ -381,14 +419,15 @@ export interface TableEmptyRowProps extends React.ComponentProps<"td"> {
 
 /** `<x-forms::table.empty-row>`: one cell across the table, e.g. for `NoItems`. */
 export function TableEmptyRow({ columns = 1, noCheckbox, children, ...props }: TableEmptyRowProps) {
+  const ui = useUi()
   const table = React.useContext(TableContext)
   const hide = noCheckbox ?? table?.noCheckbox ?? false
   return (
-    <OnuTableRow>
-      <OnuTableCell colSpan={columns + (hide ? 0 : 1)} {...props}>
+    <ui.TableRow>
+      <ui.TableCell colSpan={columns + (hide ? 0 : 1)} {...props}>
         {children}
-      </OnuTableCell>
-    </OnuTableRow>
+      </ui.TableCell>
+    </ui.TableRow>
   )
 }
 
@@ -414,8 +453,8 @@ export function BulkActions({ actions, className }: BulkActionsProps) {
         <Select2
           name="action"
           options={actions}
-          placeholder={t("bulkAction")}
-          label={t("bulkAction")}
+          placeholder={t("bulk_action")}
+          label={t("bulk_action")}
           showLabel={false}
           hideSearch
           required
@@ -467,6 +506,7 @@ export function FilterSubmit({
   children,
   className,
 }: FilterSubmitProps) {
+  const ui = useUi()
   const { t } = useFormsTranslation()
   const id = React.useId()
   const exports =
@@ -486,17 +526,24 @@ export function FilterSubmit({
         {t("filter")}
       </Button>
       {exports && keys.length ? (
-        <OnuButtonGroup>
-          <OnuButton type="submit" variant="secondary" name="download" value={keys[0]} startIcon="download">
+        <ui.ButtonGroup orientation="horizontal">
+          <ui.Button
+            type="submit"
+            color="secondary"
+            name="download"
+            value={keys[0]}
+            startIcon="download"
+            title={t("export_title")}
+          >
             {t("export")}
-          </OnuButton>
+          </ui.Button>
           {keys.length > 1 ? (
-            <ActionMenu
-              label={t("export")}
+            <ui.ActionMenu
+              label={t("export_options")}
               trigger={
-                <OnuButton type="button" variant="secondary" size="icon" aria-label={t("export")}>
-                  <Icon name="chevron-down" />
-                </OnuButton>
+                <ui.Button type="button" color="secondary" size="icon" aria-label={t("export_options")}>
+                  <ui.Icon name="chevron-down" />
+                </ui.Button>
               }
               items={keys.map((key) => ({
                 label: exports[key],
@@ -504,11 +551,11 @@ export function FilterSubmit({
               }))}
             />
           ) : null}
-        </OnuButtonGroup>
+        </ui.ButtonGroup>
       ) : exportProp === true ? (
-        <OnuButton type="submit" variant="secondary" name="download" value="1" startIcon="download">
+        <ui.Button type="submit" color="secondary" name="download" value="1" startIcon="download">
           {t("export")}
-        </OnuButton>
+        </ui.Button>
       ) : null}
       {after}
       <LinkButton url={cancelUrl} color="light">
@@ -531,6 +578,7 @@ export interface PerPageProps {
 
 /** `<x-forms::per-page>`: the `per_page` select of a filter form. */
 export function PerPage({ amounts = [10, 20, 50, 100, 500], perPage, label, showLabel, className }: PerPageProps) {
+  const { t } = useFormsTranslation()
   const setting = useSetting<number>("per_page")
   const selected = toFormString(perPage ?? currentQuery().get("per_page") ?? setting ?? "")
   const options: Array<[string, string]> = Array.isArray(amounts)
@@ -543,7 +591,7 @@ export function PerPage({ amounts = [10, 20, 50, 100, 500], perPage, label, show
       options={options}
       default={selected}
       model={false}
-      label={label}
+      label={label ?? t("per_page")}
       showLabel={showLabel}
       allowClear={false}
       hideSearch
@@ -574,7 +622,7 @@ export function SearchForm({
   const values = model ?? Object.fromEntries(currentQuery())
   return (
     <Form {...props} method={method} model={values} summary={false} className={cn("search", className)}>
-      <Input name={name} type="search" placeholder={placeholder ?? t("searchFormPlaceholder")} showLabel={false} />
+      <Input name={name} type="search" placeholder={placeholder ?? t("search_form_placeholder")} showLabel={false} />
     </Form>
   )
 }
@@ -583,7 +631,8 @@ export function SearchForm({
 /* No items, pagination                                                       */
 /* -------------------------------------------------------------------------- */
 
-export interface NoItemsProps extends Omit<React.ComponentProps<typeof EmptyState>, "title" | "action" | "icon"> {
+export interface NoItemsProps {
+  className?: string
   /** URL of the "Create New" button. Default `#`. */
   createAction?: string
   /** The listed model (class name or object), checked with `authorize("create", model)`. */
@@ -609,14 +658,15 @@ export function NoItems({
   title,
   message,
   children,
-  ...props
+  className,
 }: NoItemsProps) {
+  const ui = useUi()
   const { t } = useFormsTranslation()
   const allowed = useCan(model ? "create" : undefined, model, undefined)
   const create = showCreate ?? allowed
   return (
-    <EmptyState
-      {...props}
+    <ui.EmptyState
+      className={className}
       icon={
         icon === undefined ? undefined : typeof icon === "string" && icon.includes(" ") ? (
           <i className={icon} aria-hidden="true" />
@@ -624,13 +674,13 @@ export function NoItems({
           icon
         )
       }
-      title={isNil(title) ? t("noItemsTitle") : title}
-      description={isNil(message) ? t("noItemsMessage", { model_type: modelType ?? t("items") }) : message}
+      title={isNil(title) ? t("no_items_title") : title}
+      description={isNil(message) ? t("no_items_message", { model_type: modelType ?? t("items") }) : message}
       action={
         create
           ? (children ?? (
               <LinkButton url={createAction} startIcon="plus">
-                {t("createNew")}
+                {t("create_new")}
               </LinkButton>
             ))
           : undefined
@@ -646,23 +696,29 @@ interface CursorPaginator {
   prev_cursor?: string | null
 }
 
-export interface PaginationProps extends Omit<React.ComponentProps<typeof OnuPagination>, "paginator"> {
+export interface PaginationProps {
   /** A Laravel paginator, API resource collection or cursor paginator, as JSON. */
   paginator: LaravelPaginationMeta | LaravelResourceCollection | CursorPaginator
+  /** Link of a page. Default: the current URL with `page` set. */
+  getPageHref?: (page: number) => string
+  /** Handle page changes yourself (pages become buttons). */
+  onPageChange?: (page: number) => void
+  className?: string
 }
 
 /**
  * The pagination partials: numbered pages for length-aware paginators, previous /
  * next for cursor paginators. Pages are links that keep the rest of the query string.
  */
-export function Pagination({ paginator, getPageHref, onPageChange, ...props }: PaginationProps) {
+export function Pagination({ paginator, getPageHref, onPageChange, className }: PaginationProps) {
+  const ui = useUi()
   const { t } = useFormsTranslation()
-  const p = paginator as CursorPaginator & Partial<LaravelPaginationMeta> & { meta?: unknown }
+  const p = paginator as CursorPaginator & Partial<LaravelPaginationMeta> & { meta?: LaravelPaginationMeta }
   const isCursor = !p.meta && p.current_page === undefined && ("next_cursor" in p || "next_page_url" in p)
 
   if (isCursor) {
     return (
-      <nav aria-label={t("pagination")} className="gap-2 flex justify-between">
+      <nav aria-label={t("pagination")} className={cn("gap-2 flex justify-between", className)}>
         <LinkButton
           url={p.prev_page_url ?? undefined}
           color="light"
@@ -683,6 +739,7 @@ export function Pagination({ paginator, getPageHref, onPageChange, ...props }: P
     )
   }
 
+  const meta = p.meta ?? (p as LaravelPaginationMeta)
   const href =
     getPageHref ??
     (onPageChange
@@ -694,10 +751,11 @@ export function Pagination({ paginator, getPageHref, onPageChange, ...props }: P
         })
 
   return (
-    <OnuPagination
-      {...props}
-      paginator={paginator as LaravelPaginationMeta | LaravelResourceCollection}
-      getPageHref={href}
+    <ui.Pagination
+      className={className}
+      currentPage={meta.current_page ?? 1}
+      lastPage={meta.last_page ?? 1}
+      hrefFor={href}
       onPageChange={onPageChange}
     />
   )

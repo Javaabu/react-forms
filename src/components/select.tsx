@@ -1,17 +1,10 @@
 "use client"
 
 import * as React from "react"
-import {
-  ApiSelect,
-  MultiSelect,
-  QuickCreateSelect,
-  SearchableSelect,
-  Select as OnuSelect,
-  type ChoiceOption,
-} from "@javaabu/onu"
-
-import { getBoundValue, useBindTarget, useOldInput } from "../context/binding"
-import { useFormsTranslation } from "../context/forms-provider"
+import type { RemoteOptions } from "../core/adapter"
+import { getBoundValue, useBindTarget, useOldInput } from "../core/binding"
+import { useUi } from "../core/provider"
+import { useFormsTranslation } from "../core/strings"
 import {
   parseSelector,
   useFlag,
@@ -20,7 +13,7 @@ import {
   useLinkedFrom,
   usePublishField,
   useWatchField,
-} from "../context/registry"
+} from "../core/registry"
 import { isNil, toFormString } from "../support/data"
 import {
   normalizeOptions,
@@ -30,11 +23,10 @@ import {
   type OptionFields,
   type OptionsInput,
 } from "../support/options"
-import { before, bracketsToDots } from "../support/str"
-import { FieldWrapper, splitFieldProps, useFieldNames, type FieldProps, type PlaceholderProps } from "./field"
+import { before, bracketsToDots, nameToId } from "../support/str"
+import { splitFieldProps, useField, useFieldState, type FieldProps, type PlaceholderProps } from "./field"
 import { Hidden } from "./inputs"
 import { useCascadeOptions } from "./select-cascade"
-import { useSyncedState } from "../support/use-synced-state"
 
 export interface SelectProps extends FieldProps, PlaceholderProps, OptionFields {
   /** Options: a key → label object, a PHP list, ordered pairs, records or `ChoiceOption`s. */
@@ -115,6 +107,7 @@ function parseUrls(urls: Select2Props["ajaxUrl"]): string | Record<string, strin
 }
 
 function SelectField({ select2, ...props }: Select2Props & { select2: boolean }) {
+  const ui = useUi()
   const { t } = useFormsTranslation()
   const { field, rest } = splitFieldProps(props)
   const {
@@ -146,13 +139,16 @@ function SelectField({ select2, ...props }: Select2Props & { select2: boolean })
     className,
   } = rest
 
-  const placeholder = placeholderProp || (select2 && allowClear ? t("nothingSelected") : undefined)
-  const names = useFieldNames({ ...field, placeholder, showPlaceholder })
-  const id = names.id
+  const placeholder = placeholderProp || (select2 && allowClear ? t("nothing_selected") : undefined)
+  const id = field.id || nameToId(field.name) || undefined
   const initial = useInitialSelection(props)
   const initialKey = initial.join("\u0000")
-  const [inner, setInner] = useSyncedState<string[]>(initial, initialKey)
-  const selected = valueProp === undefined ? inner : toSelectedValues(valueProp)
+  const [selected, setInner] = useFieldState<string[]>(field.name, initial, {
+    key: initialKey,
+    controlled: valueProp === undefined ? undefined : toSelectedValues(valueProp),
+    toStore: (values) => (multiple ? values : (values[0] ?? "")),
+    fromStore: (raw) => toSelectedValues(raw, idField),
+  })
 
   const setSelected = (next: string[]) => {
     setInner(next)
@@ -225,109 +221,70 @@ function SelectField({ select2, ...props }: Select2Props & { select2: boolean })
     ? [...listed, ...selected.filter((v) => !knownValues.has(v)).map((v) => ({ value: v, label: v }))]
     : listed
 
-  const disabled =
-    field.disabled ||
-    (cascade.active && (!hasParentValue || cascade.loading || showFallback)) ||
-    (!!urlParent && !urlKey) ||
-    undefined
+  const f = useField({
+    ...field,
+    placeholder,
+    showPlaceholder,
+    disabled:
+      field.disabled ||
+      (cascade.active && (!hasParentValue || cascade.loading || showFallback)) ||
+      (!!urlParent && !urlKey),
+  })
+  const disabled = f.disabled || undefined
 
-  usePublishField({ id, name: field.name, kind: "value", value: multiple ? selected : (selected[0] ?? ""), disabled })
+  usePublishField({
+    id,
+    name: field.name,
+    kind: "value",
+    value: multiple ? selected : (selected[0] ?? ""),
+    disabled,
+    label: f.labelText,
+  })
 
-  const clearable = clearableProp ?? (select2 ? allowClear : !!placeholder) ?? false
-  const shownPlaceholder = cascade.loading ? t("loading") : cascade.error ? t("errorLoadingOptions") : names.placeholder
+  const clearable = clearableProp ?? (select2 ? allowClear : !!placeholder)
+  const shownPlaceholder = cascade.loading ? t("loading") : cascade.error ? t("error_loading_options") : f.placeholder
   const syncName = syncFieldName || `sync_${bracketsToDots(before(field.name, "[]"))}`
   const showSync = multiple && !excludeSyncField && !disabled
 
-  const common = {
-    id,
-    name: field.name,
-    required: field.required || undefined,
-    disabled,
-    placeholder: shownPlaceholder,
-    className,
-  }
-
-  let control: React.ReactNode
+  let remote: RemoteOptions | undefined
   if (isAjax && (dynamicUrl || typeof urls === "string")) {
     const valueKey = idField || "id"
     const labelKey = nameField || "name"
-    const apiProps = {
-      ...common,
+    remote = {
       url: (dynamicUrl ?? urls) as string,
-      initialOptions: staticOptions,
-      valueKey,
-      labelKey,
       searchParam: "filter[search]",
       params: { fields: `${valueKey},${labelKey}`, include: "", append: "" },
+      valueKey,
+      labelKey,
       minChars,
-      clearable,
       dependsOn: urlKey,
     }
-    control = multiple ? (
-      <ApiSelect {...apiProps} multiple value={selected} onValueChange={(v: string[]) => setSelected(v)} />
-    ) : (
-      <ApiSelect
-        {...apiProps}
-        value={selected[0] ?? null}
-        onValueChange={(v: string | null) => setSelected(v ? [v] : [])}
-      />
-    )
-  } else if (multiple) {
-    const multiProps = {
-      ...common,
-      options,
-      value: selected,
-      onValueChange: (v: string[]) => setSelected(v),
-      clearable,
-    }
-    control = tags ? (
-      <QuickCreateSelect
-        {...multiProps}
-        multiple
-        onCreate={(label: string): ChoiceOption => ({ value: label, label })}
-      />
-    ) : (
-      <MultiSelect {...multiProps} />
-    )
-  } else if (tags) {
-    control = (
-      <QuickCreateSelect
-        {...common}
-        options={options}
-        value={selected[0] ?? null}
-        onValueChange={(v: string | null) => setSelected(v ? [v] : [])}
-        clearable={clearable}
-        onCreate={(label: string): ChoiceOption => ({ value: label, label })}
-      />
-    )
-  } else if (!select2 || hideSearch) {
-    control = (
-      <OnuSelect
-        {...common}
-        options={options}
-        value={selected[0] ?? ""}
-        onValueChange={(v: string) => setSelected(v ? [v] : [])}
-        clearable={clearable && !field.required}
-      />
-    )
-  } else {
-    control = (
-      <SearchableSelect
-        {...common}
-        options={options}
-        value={selected[0] ?? null}
-        onValueChange={(v: string | null) => setSelected(v ? [v] : [])}
-        clearable={clearable}
-      />
-    )
   }
+
+  const control = (
+    <ui.Select
+      {...f.control}
+      // Laravel reads several values only from `name[]`.
+      name={multiple && !field.name.endsWith("[]") ? `${field.name}[]` : field.name}
+      disabled={disabled}
+      className={className}
+      options={remote ? staticOptions : options}
+      value={selected}
+      onValueChange={(next) => setSelected(multiple ? next : next.slice(0, 1))}
+      multiple={multiple}
+      searchable={select2 && !hideSearch}
+      clearable={!!clearable && !(field.required && !select2 && !multiple)}
+      creatable={!!tags}
+      placeholder={shownPlaceholder}
+      loading={cascade.loading}
+      remote={remote}
+    />
+  )
 
   return (
     <>
       <div hidden={showFallback || undefined} className={showFallback ? undefined : "contents"}>
-        <FieldWrapper {...field} id={id} label={names.label} disabled={disabled}>
-          {control}
-        </FieldWrapper>
+        {f.wrap(control)}
       </div>
       {showSync ? <Hidden name={syncName} value="1" model={false} /> : null}
     </>

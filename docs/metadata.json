@@ -1,0 +1,5 @@
+{
+  "name": "forms",
+  "description": "React version of the javaabu/forms Blade components, with adapters for Onu, shadcn/ui or any UI framework, and Inertia and Wayfinder support",
+  "version": "1"
+}

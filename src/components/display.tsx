@@ -1,29 +1,11 @@
 "use client"
 
 import * as React from "react"
-import {
-  Accordion as OnuAccordion,
-  Callout,
-  Card as OnuCard,
-  CardContent,
-  CardDescription,
-  CardFooter as OnuCardFooter,
-  CardHeader as OnuCardHeader,
-  CardTitle as OnuCardTitle,
-  ConditionalDisplay,
-  ConditionalLink as OnuConditionalLink,
-  DescriptionList,
-  DescriptionListItem,
-  Modal as OnuModal,
-  NavTabs as OnuNavTabs,
-  StatusBadge,
-  Tabs as OnuTabs,
-  type ModalProps as OnuModalProps,
-} from "@javaabu/onu"
-
-import { getBoundValue, Model, useBindTarget, type ModelProp } from "../context/binding"
-import { useFormsConfig, useFormsTranslation } from "../context/forms-provider"
-import { useWatchField } from "../context/registry"
+import type { CardPartSlotProps, ModalSlotProps } from "../core/adapter"
+import { getBoundValue, Model, useBindTarget, type ModelProp } from "../core/binding"
+import { useFormsConfig, useUi } from "../core/provider"
+import { useWatchField } from "../core/registry"
+import { useFormsTranslation } from "../core/strings"
 import { isNil } from "../support/data"
 import { kebab, nameToId, nameToLabel, slotName } from "../support/str"
 import { colorToTone, FormattedValue } from "./format"
@@ -38,15 +20,7 @@ export function renderIconProp(icon: React.ReactNode): React.ReactNode {
 /* Alert                                                                      */
 /* -------------------------------------------------------------------------- */
 
-const ALERT_VARIANTS = {
-  primary: "info",
-  info: "info",
-  success: "success",
-  warning: "warning",
-  danger: "destructive",
-} as const
-
-export interface AlertProps extends Omit<React.ComponentProps<typeof Callout>, "variant" | "title" | "icon"> {
+export interface AlertProps {
   /** Bootstrap alert type (`primary`, `success`, `warning`, `danger`, `info`, …). Default `primary`. */
   type?: string
   /** Heading above the message. */
@@ -54,49 +28,62 @@ export interface AlertProps extends Omit<React.ComponentProps<typeof Callout>, "
   /** Icon: a semantic name or CSS classes. */
   icon?: React.ReactNode
   dismissible?: boolean
+  className?: string
+  children?: React.ReactNode
 }
 
-/** `<x-forms::alert>`: a message box (Onu `Callout`). */
-export function Alert({ type = "primary", heading, icon, ...props }: AlertProps) {
-  const variant = ALERT_VARIANTS[type as keyof typeof ALERT_VARIANTS] ?? "default"
-  return (
-    <Callout {...props} variant={variant} title={heading} icon={icon === undefined ? false : renderIconProp(icon)} />
-  )
+/** `<x-forms::alert>`: a message box. */
+export function Alert({ type = "primary", icon, ...props }: AlertProps) {
+  const ui = useUi()
+  return <ui.Alert {...props} type={type} icon={icon === undefined ? undefined : renderIconProp(icon)} />
 }
 
 /* -------------------------------------------------------------------------- */
 /* Card                                                                       */
 /* -------------------------------------------------------------------------- */
 
-export interface CardProps extends Omit<React.ComponentProps<typeof OnuCard>, "title" | "description"> {
+export interface CardProps {
   title?: React.ReactNode
   /** Text under the title (Blade's `subtitle` slot). */
   subtitle?: React.ReactNode
   /** Header content when there is no title (Blade's `header` slot). */
   header?: React.ReactNode
+  footer?: React.ReactNode
   /** Content before the header, e.g. an image (Blade's `image_top` slot). */
   imageTop?: React.ReactNode
+  className?: string
+  children?: React.ReactNode
 }
 
 /** `<x-forms::card>`. */
-export function Card({ title, subtitle, header, imageTop, footer, children, ...props }: CardProps) {
-  const composed = !!(title || subtitle || header || footer !== undefined || imageTop)
-  return (
-    <OnuCard {...props} title={title ?? header} description={subtitle} footer={footer}>
-      {imageTop}
-      {composed ? <CardContent>{children}</CardContent> : children}
-    </OnuCard>
-  )
+export function Card({ title, header, ...props }: CardProps) {
+  const ui = useUi()
+  return <ui.Card {...props} title={title ?? header} />
 }
 
 /** `<x-forms::card.header>`. */
-export const CardHeader = OnuCardHeader
+export function CardHeader(props: CardPartSlotProps) {
+  const ui = useUi()
+  return <ui.CardHeader {...props} />
+}
+
 /** `<x-forms::card.title>`. */
-export const CardTitle = OnuCardTitle
+export function CardTitle(props: CardPartSlotProps) {
+  const ui = useUi()
+  return <ui.CardTitle {...props} />
+}
+
 /** `<x-forms::card.subtitle>`. */
-export const CardSubtitle = CardDescription
+export function CardSubtitle(props: CardPartSlotProps) {
+  const ui = useUi()
+  return <ui.CardSubtitle {...props} />
+}
+
 /** `<x-forms::card.footer>`. */
-export const CardFooter = OnuCardFooter
+export function CardFooter(props: CardPartSlotProps) {
+  const ui = useUi()
+  return <ui.CardFooter {...props} />
+}
 
 /* -------------------------------------------------------------------------- */
 /* Accordion                                                                  */
@@ -140,7 +127,6 @@ export interface AccordionProps {
   slots?: Record<string, React.ReactNode>
   /** `AccordionItem` elements, after the generated items. */
   children?: React.ReactNode
-  variant?: React.ComponentProps<typeof OnuAccordion>["variant"]
   className?: string
 }
 
@@ -149,7 +135,8 @@ function textContent(content: React.ReactNode) {
 }
 
 /** `<x-forms::accordion>`: collapsible panels from `items` and/or `AccordionItem` children. */
-export function Accordion({ id, items, slots = {}, children, variant, className }: AccordionProps) {
+export function Accordion({ id, items, slots = {}, children, className }: AccordionProps) {
+  const ui = useUi()
   const slot = (key: string) => slots[key] ?? slots[kebab(key)]
   const entries: Array<{
     value: string
@@ -189,27 +176,15 @@ export function Accordion({ id, items, slots = {}, children, variant, className 
   })
 
   const open = entries.filter((e) => e.show).map((e) => e.value)
-  const onuItems = entries.map(({ value, title, content, disabled }) => ({ value, title, content, disabled }))
+  const slotItems = entries.map(({ value, title, content, disabled, id: itemId }) => ({
+    value,
+    title,
+    content,
+    disabled,
+    id: itemId,
+  }))
 
-  return open.length > 1 ? (
-    <OnuAccordion
-      id={id}
-      type="multiple"
-      defaultValue={open}
-      items={onuItems}
-      variant={variant}
-      className={className}
-    />
-  ) : (
-    <OnuAccordion
-      id={id}
-      type="single"
-      defaultValue={open[0]}
-      items={onuItems}
-      variant={variant}
-      className={className}
-    />
-  )
+  return <ui.Accordion id={id} items={slotItems} defaultValue={open} multiple={open.length > 1} className={className} />
 }
 
 /* -------------------------------------------------------------------------- */
@@ -238,8 +213,10 @@ export function TabsPane(_props: TabsPaneProps): React.ReactNode {
   return null
 }
 
-export interface TabsProps extends Omit<React.ComponentProps<typeof OnuTabs>, "items" | "defaultValue" | "children"> {
+export interface TabsProps {
   tabs: TabData[]
+  onValueChange?: (value: string) => void
+  className?: string
   /** Name of the active tab. Default: the first. */
   active?: string
   /** Pane content by slot name (`profile`, `contactDetails`), like Blade's named slots. */
@@ -249,7 +226,8 @@ export interface TabsProps extends Omit<React.ComponentProps<typeof OnuTabs>, "i
 }
 
 /** `<x-forms::tabs>`. */
-export function Tabs({ tabs, active, slots = {}, children, onValueChange, ...props }: TabsProps) {
+export function Tabs({ tabs, active, slots = {}, children, onValueChange, className }: TabsProps) {
+  const ui = useUi()
   const { translate } = useFormsTranslation()
   const panes = new Map<string, React.ReactNode>()
   React.Children.forEach(children, (child) => {
@@ -259,8 +237,8 @@ export function Tabs({ tabs, active, slots = {}, children, onValueChange, ...pro
   const urls = new Map(tabs.filter((t) => t.url).map((t) => [nameToId(t.name), t.url!]))
 
   return (
-    <OnuTabs
-      {...props}
+    <ui.Tabs
+      className={className}
       defaultValue={nameToId(active || tabs[0]?.name || "")}
       onValueChange={(value) => {
         const url = urls.get(value)
@@ -286,19 +264,21 @@ export interface NavTabData {
   icon?: string
 }
 
-export interface NavTabsProps extends Omit<React.ComponentProps<typeof OnuNavTabs>, "items"> {
+export interface NavTabsProps {
   tabs: NavTabData[]
+  className?: string
 }
 
 /** `<x-forms::nav-tabs>`: tabs that are links to pages. */
-export function NavTabs({ tabs, ...props }: NavTabsProps) {
+export function NavTabs({ tabs, className }: NavTabsProps) {
+  const ui = useUi()
   return (
-    <OnuNavTabs
-      {...props}
+    <ui.NavTabs
+      className={className}
       items={tabs.map((tab) => ({
         label: tab.title,
         href: tab.url || "#",
-        isActive: tab.active,
+        active: tab.active,
         disabled: tab.disabled,
         icon: tab.icon ? renderIconProp(tab.icon) : undefined,
       }))}
@@ -310,42 +290,46 @@ export function NavTabs({ tabs, ...props }: NavTabsProps) {
 /* Modal                                                                      */
 /* -------------------------------------------------------------------------- */
 
-const MODAL_SIZES: Record<string, OnuModalProps["size"]> = {
+const MODAL_SIZES: Record<string, ModalSlotProps["size"]> = {
   "modal-sm": "sm",
   "modal-lg": "lg",
   "modal-xl": "xl",
   "modal-fullscreen": "full",
 }
 
-export interface ModalProps extends Omit<OnuModalProps, "size"> {
+export interface ModalProps extends Omit<ModalSlotProps, "size"> {
   /** Bootstrap size class (`modal-sm`, `modal-lg`, `modal-xl`, `modal-fullscreen`). Default `modal-lg`. */
   modalSizeClass?: string
-  size?: OnuModalProps["size"]
+  size?: ModalSlotProps["size"]
 }
 
 /** `<x-forms::modal>`. Open it with `trigger`, or control it with `open` / `onOpenChange`. */
 export function Modal({ modalSizeClass = "modal-lg", size, ...props }: ModalProps) {
+  const ui = useUi()
   const resolved =
     size ?? MODAL_SIZES[modalSizeClass] ?? (modalSizeClass.startsWith("modal-fullscreen") ? "full" : "lg")
-  return <OnuModal {...props} size={resolved} />
+  return <ui.Modal {...props} size={resolved} />
 }
 
 /* -------------------------------------------------------------------------- */
 /* Status                                                                     */
 /* -------------------------------------------------------------------------- */
 
-export interface StatusProps extends Omit<React.ComponentProps<typeof StatusBadge>, "status" | "color"> {
+export interface StatusProps {
   label?: React.ReactNode
   /** Bootstrap colour. Default `primary`. */
   color?: string
+  className?: string
+  children?: React.ReactNode
 }
 
 /** `<x-forms::status>`: a status badge. */
-export function Status({ label, color = "primary", children, ...props }: StatusProps) {
+export function Status({ label, color = "primary", children, className }: StatusProps) {
+  const ui = useUi()
   return (
-    <StatusBadge {...props} status={colorToTone(color)} icon={props.icon ?? false}>
+    <ui.Status tone={colorToTone(color)} className={className}>
       {children ?? label}
-    </StatusBadge>
+    </ui.Status>
   )
 }
 
@@ -360,7 +344,7 @@ export function useCan(can: string | undefined, arg: unknown, guard: string | nu
   return authorize ? authorize(can, arg, guard) : false
 }
 
-export interface ConditionalLinkProps extends Omit<React.ComponentProps<typeof OnuConditionalLink>, "href" | "when"> {
+export interface ConditionalLinkProps extends Omit<React.ComponentProps<"a">, "href"> {
   /** URL to link to. */
   url: string
   /** Link only when true. Default: the result of `can`, else `false`. */
@@ -390,13 +374,16 @@ export function ConditionalLink({
   children,
   ...props
 }: ConditionalLinkProps) {
+  const ui = useUi()
   const target = useBindTarget(model)
   const allowed = useCan(can, arg, guard)
   const shown = value !== undefined ? value : name ? getBoundValue(target, name) : ""
+  const content = children ?? <FormattedValue value={shown} multiline={multiline} />
+  if (!(showLink ?? allowed)) return <>{content}</>
   return (
-    <OnuConditionalLink {...props} href={url} when={showLink ?? allowed}>
-      {children ?? <FormattedValue value={shown} multiline={multiline} />}
-    </OnuConditionalLink>
+    <ui.Link {...props} href={url}>
+      {content}
+    </ui.Link>
   )
 }
 
@@ -411,6 +398,25 @@ export interface ConditionalWrapperProps extends Omit<React.ComponentProps<"fiel
   disable?: boolean
   /** Use the checked state of the `enableElem` checkbox instead of its value. */
   enableCheckbox?: boolean
+}
+
+function isBlank(value: unknown) {
+  return (
+    isNil(value) ||
+    value === "" ||
+    value === false ||
+    value === 0 ||
+    value === "0" ||
+    (Array.isArray(value) && value.length === 0)
+  )
+}
+
+/** js-utilities' matching: any of the values (or a checked box with `true`); without a value, anything non-empty. */
+export function matchesCondition(current: unknown, matcher: true | string | string[] | undefined): boolean {
+  if (matcher === undefined) return !isBlank(current)
+  const accepted = (Array.isArray(matcher) ? matcher : [matcher]).map(String)
+  const values = Array.isArray(current) ? current : [current]
+  return values.some((v) => accepted.includes(String(v)))
 }
 
 /**
@@ -435,16 +441,20 @@ export function ConditionalWrapper({
       : isNil(enableValue)
         ? undefined
         : String(enableValue)
+  const current = enableCheckbox ? watched.checked : watched.value
+  const matches = matchesCondition(current, matcher)
+  const enabled = disable ? !matches : matches
   return (
-    <ConditionalDisplay
+    <fieldset
       {...props}
-      value={enableCheckbox ? watched.checked : watched.value}
-      when={matcher}
-      not={!!disable}
-      action={hideFields ? "show" : "enable"}
+      data-slot="conditional-wrapper"
+      data-state={enabled ? "enabled" : hideFields ? "hidden" : "disabled"}
+      disabled={!enabled}
+      hidden={hideFields && !enabled ? true : undefined}
+      style={{ border: 0, margin: 0, padding: 0, minInlineSize: 0, ...props.style }}
     >
       {children}
-    </ConditionalDisplay>
+    </fieldset>
   )
 }
 
@@ -493,24 +503,25 @@ export function TextEntry({
   className,
   children,
 }: TextEntryProps) {
+  const ui = useUi()
   const { translate } = useFormsTranslation()
   const inList = React.useContext(InfolistContext)
   const target = useBindTarget(model)
   const shown = value !== undefined ? value : name ? getBoundValue(target, name) : ""
   const item = (
-    <DescriptionListItem
+    <ui.DescriptionItem
       label={showLabel ? (label ?? (name ? translate(nameToLabel(name)) : "")) : null}
       classNames={{ label: inlineEntryLabelClass, value: inlineEntryClass }}
       className={inList ? className : undefined}
     >
       {children ?? <FormattedValue value={shown} multiline={multiline} wysiwyg={wysiwyg} />}
-    </DescriptionListItem>
+    </ui.DescriptionItem>
   )
   if (inList) return item
   return (
-    <DescriptionList layout={inline ? "inline" : "stacked"} divided={false} className={className}>
+    <ui.DescriptionList layout={inline ? "inline" : "stacked"} className={className}>
       {item}
-    </DescriptionList>
+    </ui.DescriptionList>
   )
 }
 
@@ -531,9 +542,10 @@ export interface InfolistProps extends Omit<CardProps, "children"> {
 
 /** `<x-forms::infolist>`: a card of `TextEntry`s bound to a model. */
 export function Infolist({ model, layout = "auto", children, ...props }: InfolistProps) {
+  const ui = useUi()
   const list = (
     <InfolistContext.Provider value>
-      <DescriptionList layout={layout}>{children}</DescriptionList>
+      <ui.DescriptionList layout={layout}>{children}</ui.DescriptionList>
     </InfolistContext.Provider>
   )
   return <Card {...props}>{model !== undefined ? <Model model={model}>{list}</Model> : list}</Card>

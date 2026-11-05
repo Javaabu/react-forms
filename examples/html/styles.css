@@ -1,0 +1,90 @@
+/* A few rules for the HTML adapter's data-slot attributes. Logical properties only, so RTL works. */
+:root {
+  font-family: system-ui, "Noto Sans Thaana", sans-serif;
+  color-scheme: light dark;
+}
+main {
+  max-width: 48rem;
+  margin-inline: auto;
+  padding: 1.5rem;
+  display: grid;
+  gap: 2rem;
+}
+[data-slot="form"] {
+  display: grid;
+  gap: 1rem;
+}
+[data-slot="field"] {
+  display: grid;
+  gap: 0.25rem;
+}
+[data-slot="field"][data-inline] {
+  grid-template-columns: 12rem 1fr;
+}
+[data-slot="label"] {
+  font-weight: 600;
+}
+[data-slot="required-marker"],
+[data-slot="field-errors"] {
+  color: #b91c1c;
+}
+[data-slot="help-text"] {
+  color: GrayText;
+  font-size: 0.875rem;
+}
+[data-slot="input"],
+[data-slot="textarea"],
+[data-slot="number"],
+[data-slot="select"],
+[data-slot="date"],
+[data-slot="wysiwyg"] {
+  font: inherit;
+  padding: 0.375rem 0.5rem;
+  inline-size: 100%;
+  box-sizing: border-box;
+}
+[aria-invalid="true"] {
+  outline: 2px solid #b91c1c;
+}
+[data-slot="error-summary"],
+[data-slot="alert"],
+[data-slot="card"] {
+  border: 1px solid GrayText;
+  border-radius: 0.5rem;
+  padding: 1rem;
+}
+[data-slot="button"],
+[data-slot="link-button"] {
+  font: inherit;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  border: 1px solid GrayText;
+  cursor: pointer;
+}
+[data-slot="button"][data-color="primary"] {
+  background: #2563eb;
+  color: white;
+  border-color: #2563eb;
+}
+[data-slot="status"] {
+  padding-inline: 0.5rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, GrayText 20%, transparent);
+}
+[data-slot="table"] {
+  border-collapse: collapse;
+  inline-size: 100%;
+}
+[data-slot="table"] th,
+[data-slot="table"] td {
+  text-align: start;
+  padding: 0.5rem;
+  border-block-end: 1px solid color-mix(in srgb, GrayText 30%, transparent);
+}
+.sr-only {
+  position: absolute;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+}

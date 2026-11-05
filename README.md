@@ -1,8 +1,11 @@
-# React Forms
+# Forms for React
 
-`@javaabu/react-forms` is the React port of [`javaabu/forms`](https://github.com/Javaabu/forms), the Laravel Blade components. It also covers the form behaviour of [`@javaabu/js-utilities`](https://github.com/Javaabu/js-utilities). It is built on [Onu](https://www.npmjs.com/package/@javaabu/onu), Javaabu's React UI library, so it inherits RTL and Dhivehi support, Thaana typing, theming and WCAG 2.2 AA accessibility.
+[![Tests](https://github.com/Javaabu/react-forms/actions/workflows/ci.yml/badge.svg?branch=next-gen)](https://github.com/Javaabu/react-forms/actions/workflows/ci.yml?query=branch%3Anext-gen)
+[![Coverage](https://codecov.io/gh/Javaabu/react-forms/branch/next-gen/graph/badge.svg)](https://codecov.io/gh/Javaabu/react-forms/tree/next-gen)
+[![npm](https://img.shields.io/npm/v/@javaabu/forms.svg)](https://www.npmjs.com/package/@javaabu/forms)
+[![License](https://img.shields.io/github/license/Javaabu/react-forms.svg)](LICENSE.md)
 
-The API follows the Blade components. Blade attributes become camelCase props, and slots become props or children.
+`@javaabu/forms` is the React version of [javaabu/forms](https://github.com/Javaabu/forms), the Laravel Blade form components. It has the same components and attributes, model binding, old input and validation errors, so a form looks and behaves the same in a Blade view and an Inertia React page. It renders with [Onu](https://github.com/Javaabu/onu), shadcn/ui, plain HTML or your own UI kit.
 
 ```blade
 <x-forms::form :model="$article" method="PATCH" :action="route('articles.update', $article)">
@@ -14,39 +17,58 @@ The API follows the Blade components. Blade attributes become camelCase props, a
 ```
 
 ```tsx
-import * as Forms from "@javaabu/react-forms"
+import { Checkbox, Form, Select2, Submit, Text } from "@javaabu/forms"
+import { update } from "@/actions/App/Http/Controllers/ArticlesController"
 
-;<Forms.Form model={article} method="PATCH" action={route("articles.update", article.id)}>
-  <Forms.Text name="title" required />
-  <Forms.Select2 name="category" options={categories} relation />
-  <Forms.Checkbox name="is_featured" />
-  <Forms.Submit>Save</Forms.Submit>
-</Forms.Form>
+;<Form model={article} action={update}>
+  <Text name="title" required thaana />
+  <Select2 name="category" options={categories} relation />
+  <Checkbox name="is_featured" />
+  <Submit>Save</Submit>
+</Form>
 ```
+
+## Features
+
+- **The Blade API.** The same component names, camelCase attributes, generated ids and translated labels.
+- **Laravel built in.** Model binding, old input, method spoofing, CSRF, relations, `sync_` fields, and validation errors under the right field, including error bags and `items.0.name` keys.
+- **Any UI.** Adapters for Onu, shadcn/ui and plain HTML, a typed adapter contract with a conformance test kit, and per-component overrides.
+- **Inertia and Wayfinder.** Forms submit as Inertia visits, or through `useForm()`, without glue code, and take Wayfinder routes as `action`. They also submit natively or with fetch.
+- **Dhivehi and RTL.** English and Dhivehi strings with [@javaabu/i18n](https://github.com/Javaabu/i18n), RTL layouts and Thaana typing.
+
+## Installation
+
+```bash
+npm install @javaabu/forms
+```
+
+```tsx
+import { FormsProvider } from "@javaabu/forms"
+import { inertia } from "@javaabu/forms/inertia"
+import { onu } from "@javaabu/forms/onu"
+
+;<FormsProvider ui={onu} router={inertia}>
+  {children}
+</FormsProvider>
+```
+
+See [Installation and setup](docs/installation-and-setup.md).
 
 ## Documentation
 
+The full documentation is in [`docs/`](docs/intro.md), with an index for AI assistants in [`llms.txt`](llms.txt). Start with:
+
 - [Installation and setup](docs/installation-and-setup.md)
-- [Migrating from Blade](docs/migrating-from-blade.md): every component, prop mapping and difference
-- Basic usage: [model binding](docs/basic-usage/model-binding.md), [inputs and textarea](docs/basic-usage/inputs-and-textarea.md), [checkboxes and radios](docs/basic-usage/checkbox-and-radio.md), [selects](docs/basic-usage/select-elements.md), [Select2, ajax and cascading selects](docs/basic-usage/select2.md), [dates](docs/basic-usage/dates.md), [files and images](docs/basic-usage/file-inputs.md), [conditional wrapper](docs/basic-usage/conditional-wrapper.md), [forms, buttons and errors](docs/basic-usage/forms-and-buttons.md), [display components](docs/basic-usage/display.md), [listing pages](docs/basic-usage/listing.md), [WYSIWYG](docs/basic-usage/wysiwyg.md), [map input](docs/basic-usage/map-input.md)
-
-## What carries over from Blade
-
-- **Model binding**: `Form model`, `<Model>` (Blade's `@model`), `model={false}`, nested models and relations.
-- **Value precedence**: old input, then the bound value, then `default`.
-- **Generated labels and ids**: `company_name` → "Company Name" / `company_name`, `address[city]` → `address-city`. Labels go through your translator.
-- **Laravel requests**: `_method` spoofing, the `_token` field, `multipart/form-data`, `sync_<name>` fields for multi-selects, `name[]` arrays. Validation errors appear under their fields: `Form` reads a 422 response, Inertia's `errors`, or your `errors` prop.
-- **js-utilities behaviour, in React**: `conditionalDisplay`, select2 ajax search, cascading selects with fallback inputs, `fileUploadInput`, `selectAllCheckbox`, `sortable` headings, `animate-submit`, `urlInput`.
-- **Strings**: the `en` and `dv` strings of `javaabu/forms`, following Onu's locale.
+- [Forms and buttons](docs/basic-usage/forms-and-buttons.md), [model binding](docs/basic-usage/model-binding.md), [validation errors](docs/basic-usage/errors.md)
+- [UI adapters](docs/advanced-usage/adapters.md), [shadcn/ui](docs/advanced-usage/shadcn.md), [Inertia](docs/advanced-usage/inertia.md), [Wayfinder](docs/advanced-usage/wayfinder.md)
+- [Migrating from Blade](docs/migrating-from-blade.md), [upgrading from @javaabu/react-forms](docs/upgrading.md), [parity with javaabu/forms](docs/parity.md)
 
 ## Development
 
 ```bash
 pnpm install
-pnpm dev          # playground with every component (add ?dv for Dhivehi)
-pnpm test
-pnpm lint && pnpm typecheck && pnpm format:check
-pnpm build
+pnpm examples   # one page per adapter (add ?dv for Dhivehi)
+pnpm check      # lint, format, typecheck, tests, build, examples
 ```
 
 ## License
