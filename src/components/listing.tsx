@@ -55,16 +55,40 @@ function submitWith(form: HTMLFormElement | null | undefined, name: string, valu
 /* Table                                                                      */
 /* -------------------------------------------------------------------------- */
 
-interface TableContextValue {
+/** The row selection of the surrounding `Table`, from `useTableSelection()`. */
+export interface TableSelection {
+  /** The table's `model`: the rows' checkboxes submit `<model>[]`. */
   model: string
+  /** Ids of the checked rows. */
+  selected: ReadonlySet<string>
+  /** Ids of the rows that have an enabled checkbox (the rows on this page). */
+  rows: ReadonlySet<string>
+  /** Replaces the selection, e.g. `setSelected([])` to clear it or `setSelected(rows)` to select the page. */
+  setSelected: (ids: Iterable<string>) => void
+}
+
+interface TableContextValue extends TableSelection {
   noCheckbox: boolean
   filterId: string
-  selected: ReadonlySet<string>
   toggle: (id: string, checked: boolean) => void
   register: (id: string) => () => void
 }
 
 const TableContext = React.createContext<TableContextValue | null>(null)
+
+/**
+ * The row selection of the surrounding `Table`, for content rendered inside it
+ * (its `bulkForm`, `beforeTable`, rows, …): "3 selected", "select all 1,234".
+ * `null` outside a table.
+ */
+export function useTableSelection(): TableSelection | null {
+  const table = React.useContext(TableContext)
+  return React.useMemo(
+    () =>
+      table ? { model: table.model, selected: table.selected, rows: table.rows, setSelected: table.setSelected } : null,
+    [table],
+  )
+}
 
 export interface TableProps extends Omit<React.ComponentProps<"div">, "children"> {
   /** Name of the rows' checkboxes (`<model>[]`) and of the select-all group. */
@@ -129,20 +153,18 @@ export function Table({
   const [selected, setSelected] = React.useState<Set<string>>(() => new Set())
   const [all, setAll] = React.useState<Set<string>>(() => new Set())
 
-  const ctx = React.useMemo<TableContextValue>(
+  // Stable callbacks: rows register in an effect that depends on `register`.
+  const actions = React.useMemo(
     () => ({
-      model,
-      noCheckbox,
-      filterId,
-      selected,
-      toggle: (id, checked) =>
+      setSelected: (ids: Iterable<string>) => setSelected(new Set(ids)),
+      toggle: (id: string, checked: boolean) =>
         setSelected((prev) => {
           const next = new Set(prev)
           if (checked) next.add(id)
           else next.delete(id)
           return next
         }),
-      register: (id) => {
+      register: (id: string) => {
         setAll((prev) => new Set(prev).add(id))
         return () =>
           setAll((prev) => {
@@ -152,7 +174,12 @@ export function Table({
           })
       },
     }),
-    [model, noCheckbox, filterId, selected],
+    [],
+  )
+
+  const ctx = React.useMemo<TableContextValue>(
+    () => ({ model, noCheckbox, filterId, selected, rows: all, ...actions }),
+    [model, noCheckbox, filterId, selected, all, actions],
   )
 
   const allChecked = all.size > 0 && [...all].every((id) => selected.has(id))
@@ -160,7 +187,7 @@ export function Table({
   const toggleAll = (checked: boolean) => setSelected(checked ? new Set(all) : new Set())
 
   const table = (
-    <TableContext.Provider value={ctx}>
+    <>
       {beforeTable}
       <ui.Table
         data-form-sortable={`#${filterId}`}
@@ -188,11 +215,11 @@ export function Table({
         <ui.TableBody>{rows ?? children}</ui.TableBody>
         {afterTbody}
       </ui.Table>
-    </TableContext.Provider>
+    </>
   )
 
   return (
-    <>
+    <TableContext.Provider value={ctx}>
       <div data-slot="forms-table" className={cn("w-full overflow-x-auto", className)} {...props}>
         {!noBulk && bulkForm ? (
           <Form {...bulkFormProps} action={bulkFormAction} summary={bulkFormProps?.summary ?? false}>
@@ -204,7 +231,7 @@ export function Table({
         )}
       </div>
       {noPagination ? null : pagination}
-    </>
+    </TableContext.Provider>
   )
 }
 

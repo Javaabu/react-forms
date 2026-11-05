@@ -94,6 +94,7 @@ What this gets you, with no extra code: values from `product`, ids and translate
 - Add `thaana` to free-text fields that take Dhivehi. Labels you write go through `__()` from `@javaabu/i18n`; add the Dhivehi line to `lang/dv.json`.
 - Logical CSS only (`ms-`, `pe-`, `start-`, `text-start`).
 - To change one component's look, replace its slot: `<FormsProvider components={{ Select: MySelect }}>`. Don't wrap or copy the component.
+- A field component of your own (or another package's) uses the hooks the built-in fields use: `splitFieldProps`, `useField`, `useFieldValue`, `useFieldState`, `usePublishField`. Then it gets `useForm()` data, reset, `ConditionalWrapper` and errors like the built-in fields. Don't bind it by hand with `value={form.data.x} onChange={…}`. See [Custom fields](references/custom-fields.md).
 
 ## Things that differ from what you might assume
 
@@ -108,3 +109,4 @@ What this gets you, with no extra code: values from `product`, ids and translate
 - [Components and props](references/components.md): every component with its props and Blade counterpart
 - [Listing pages](references/listing.md): tables, filters, bulk actions, pagination
 - [Adapters](references/adapters.md): replacing slots, shadcn/ui, writing an adapter
+- [Custom fields](references/custom-fields.md): field components that plug into `Form` like the built-in ones

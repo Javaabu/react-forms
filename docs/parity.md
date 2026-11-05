@@ -28,7 +28,7 @@ sidebar_position: 1.6
 | `File`, `FileUpload`, `Image`, `ImageUpload` | `file`, `file-upload`, `image`, `image-upload` | ✅ | |
 | `MapInput` | `map-input` | ✅ | |
 | `ConditionalWrapper`, `ConditionalLink` | `conditional-wrapper`, `conditional-link` | ✅ | |
-| `Button`, `Submit`, `LinkButton`, `ButtonGroup` | `button`, `submit`, `link-button`, `button-group` | ✅ | `color`, `size`, `startIcon`, `endIcon`, `loading`; `LinkButton` `disabled`. |
+| `Button`, `Submit`, `LinkButton`, `ButtonGroup` | `button`, `submit`, `link-button`, `button-group` | ✅ | `color`, `size`, `startIcon`, `endIcon` (Blade's icon names, [#21](https://github.com/Javaabu/react-forms/issues/21)), `loading`; `LinkButton` `disabled`. |
 | `Alert` | `alert` | ✅ | |
 | `Card`, `CardHeader`, `CardTitle`, `CardSubtitle`, `CardFooter` | `card`, `card.header`, `card.title`, `card.subtitle`, `card.footer` | ✅ | |
 | `Accordion`, `AccordionItem` | `accordion`, `accordion.item` | ✅ | Named slots of `accordion` are React's `slots` prop. |
@@ -40,9 +40,11 @@ sidebar_position: 1.6
 | `TextEntry`, `BooleanEntry`, `Infolist` | `text-entry`, `boolean-entry`, `infolist` | ✅ | |
 | `FormattedValue` | `formatted-value` | ✅ | New in v2. |
 | `Table`, `TableRow`, `TableCell`, `TableHeading`, `TableEmptyRow` | `table`, `table.row`, `table.cell`, `table.heading`, `table.empty-row` | ✅ | `Table`'s named slots (`bulkForm`, `headers`, `beforeTable`, …) are props. |
+| `useTableSelection()` | — | ⚛️ | The table's selection for content inside it (`bulkForm`): selected and page row ids, `setSelected()` ([#22](https://github.com/Javaabu/react-forms/issues/22)). Blade's bulk actions read the checkboxes with js-utilities. |
+| `splitFieldProps`, `useField`, `useFieldValue`, `useFieldState`, `usePublishField` | — | ⚛️ | Hooks for [custom fields](./advanced-usage/custom-fields) that behave like the built-in ones: `useForm()` data, reset, `ConditionalWrapper`, errors ([#23](https://github.com/Javaabu/react-forms/issues/23)). Blade has no counterpart: a Blade field is markup that submits natively. |
 | `BulkActions`, `Filter`, `FilterSubmit`, `PerPage`, `SearchForm`, `NoItems` | `bulk-actions`, `filter`, `filter-submit`, `per-page`, `search-form`, `no-items` | ✅ | |
 | `Pagination` | `pagination` | ✅ | New in v2. Takes a paginator's JSON in React. |
-| — | `icon` | 🅱️ | React components get icons from the adapter's `Icon` slot. |
+| `Icon` | `icon` | ✅ | `name`, `className`. The same 30 bundled Lucide names; any other name is icon font classes (`<i class>`) in both. React also has `chevrons-up-down` and the aliases `close` (`x`) and `error` (`circle-alert`). The Onu adapter draws them with Onu's `Icon`. See [Icons](./basic-usage/icons). |
 | — | `js-errors` | 🅱️ | A placeholder for js-utilities' AJAX errors. React shows those errors itself. |
 
 # Attributes every field shares
@@ -81,6 +83,7 @@ Only what differs; everything else in a component's props is in both.
 | `SearchForm` | `action` and every `Form` prop | `route`, `params`, `icon` | React passes the URL (or a Wayfinder route) as `action`. |
 | `FormattedValue` | `arrays`, `wysiwyg` | `name`, `model` | React takes the value itself. |
 | `Pagination` | `getPageHref`, `onPageChange` | — | Client-side page links. |
+| Icons | `Icon` `size` | the `icons` config (which icon the date picker, clear, upload, … buttons use) | React's pickers and file inputs draw the adapter's icons. Replace the `Icon` slot to change every icon. |
 | `Infolist` | `layout` | — | Sets every entry's layout; in Blade set `inline` on each entry. |
 | `Accordion`, `Tabs` | `slots` | (named slots) | A record of named slots. |
 

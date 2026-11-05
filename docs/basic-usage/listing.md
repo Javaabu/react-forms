@@ -74,6 +74,47 @@ export default function Index({ users, query }) {
 - **Empty state.** `NoItems` shows "It's a bit lonely here." and a Create New button. The button shows when `showCreate` is true, or when `FormsProvider authorize("create", model)` allows it.
 - **Pagination.** Pass a Laravel paginator, an API resource collection or a cursor paginator, as JSON. Pages are links that keep the rest of the query string. Pass `getPageHref` to build the links yourself, or `onPageChange` for buttons.
 
+# Reading the selection
+
+Content inside a `Table` (its `bulkForm`, `beforeTable`, rows, …) reads the row selection with `useTableSelection()`, for "3 selected" or "select all 1,234" in a bulk actions bar. It returns `null` outside a table.
+
+```tsx
+import { BulkActions, Table, useTableSelection } from "@javaabu/forms"
+
+function SelectionBar() {
+  const selection = useTableSelection()
+  if (!selection || selection.selected.size === 0) return null
+  return (
+    <p>
+      {selection.selected.size} / {selection.rows.size} selected{" "}
+      <button type="button" onClick={() => selection.setSelected([])}>
+        ސާފުކުރޭ
+      </button>
+    </p>
+  )
+}
+
+<Table
+  model="articles"
+  bulkFormAction="/articles/bulk"
+  bulkForm={
+    <>
+      <SelectionBar />
+      <BulkActions actions={{ delete: "Delete" }} />
+    </>
+  }
+>
+  {/* rows */}
+</Table>
+```
+
+| Field | What it is |
+| --- | --- |
+| `model` | The table's `model`: the checkboxes submit `<model>[]`. |
+| `selected` | Ids of the checked rows (a `ReadonlySet<string>`). |
+| `rows` | Ids of the rows with an enabled checkbox: the rows on this page. |
+| `setSelected(ids)` | Replaces the selection: `setSelected([])` clears it, `setSelected(rows)` selects the page. |
+
 # Table props
 
 | Prop | Default | Description |

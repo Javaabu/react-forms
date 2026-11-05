@@ -19,6 +19,7 @@
 | `examples`                                | `pnpm examples`: one page per adapter (`?dv` for Dhivehi)                                                                                                                                  |
 | `docs`                                    | Docusaurus docs; `llms.txt` indexes every page; `docs/parity.md` is the Blade parity matrix                                                                                                |
 | `resources/boost`                         | Laravel Boost guideline and the `javaabu-react-forms` skill                                                                                                                                |
+| `scripts/icons.mjs`                       | Generates `src/adapters/html/icons.ts` (Blade's bundled Lucide icons) from `lucide-react`                                                                                                  |
 
 ## Rules
 

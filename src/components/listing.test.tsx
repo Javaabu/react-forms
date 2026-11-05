@@ -15,6 +15,7 @@ import {
   TableEmptyRow,
   TableHeading,
   TableRow,
+  useTableSelection,
 } from "./listing"
 
 const users = [
@@ -83,6 +84,52 @@ describe("Table", () => {
     expect(values(form).get("redirect")).toBe(window.location.href)
     expect(screen.getByText("Nothing")).toHaveAttribute("colspan", "3")
     expect(container.querySelector('input[name="users[]"]')).toBeNull()
+  })
+
+  it("shares the selection with content inside the table", () => {
+    function SelectionBar() {
+      const selection = useTableSelection()
+      if (!selection) return <span>No table</span>
+      return (
+        <>
+          <span>
+            {selection.selected.size} / {selection.rows.size} {selection.model}
+          </span>
+          <button type="button" onClick={() => selection.setSelected(selection.rows)}>
+            ހުރިހާ
+          </button>
+          <button type="button" onClick={() => selection.setSelected([])}>
+            ސާފު
+          </button>
+        </>
+      )
+    }
+    const { container } = render(
+      <>
+        <SelectionBar />
+        <Table model="users" bulkForm={<SelectionBar />}>
+          {users.map((user) => (
+            <TableRow key={user.id} model={user}>
+              <TableCell name="name" />
+            </TableRow>
+          ))}
+          <TableRow model={{ id: 3, name: "ޙަސަން" }} disableCheckbox>
+            <TableCell name="name" />
+          </TableRow>
+        </Table>
+      </>,
+    )
+    const form = container.querySelector("form")!
+    expect(screen.getByText("No table")).toBeInTheDocument()
+    expect(screen.getByText("0 / 2 users")).toBeInTheDocument()
+    fireEvent.click(screen.getByLabelText("Select 2"))
+    expect(screen.getByText("1 / 2 users")).toBeInTheDocument()
+    fireEvent.click(screen.getByText("ހުރިހާ"))
+    expect(screen.getByText("2 / 2 users")).toBeInTheDocument()
+    expect(values(form).getAll("users[]")).toEqual(["1", "2"])
+    fireEvent.click(screen.getByText("ސާފު"))
+    expect(values(form).getAll("users[]")).toEqual([])
+    expect(screen.getByLabelText("Select All")).not.toBeChecked()
   })
 
   it("sorts by submitting the filter form", () => {

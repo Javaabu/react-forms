@@ -17,6 +17,8 @@ Paths are relative to this file. In a project, that's node_modules/@javaabu/form
 - File inputs need `<Form files>`. Don't nest forms.
 - Add `thaana` to free-text fields that take Dhivehi. Never hard-code user-facing English: use `__()` from `@javaabu/i18n` for your labels. Package strings are `forms::strings.*`, changed in `lang/vendor/forms/{locale}/strings.php`.
 - Use logical CSS (`ms-`, `pe-`, `start-`, `text-start`), never `left`/`right`, so pages work in RTL.
+- For a field component of your own (or another package's), use `splitFieldProps`, `useField`, `useFieldValue`, `useFieldState` and `usePublishField` (see Custom fields), not `value`/`onChange` bound by hand.
+- Button icons (`startIcon`, `endIcon`) and `Icon` take Blade's icon names (`pencil`, `trash-2`, `eye`, `check`, …) or icon font classes.
 - To change how one component looks, replace its slot (`<FormsProvider components={{ Select: MySelect }}>`) instead of wrapping or forking the component. To support a new UI kit, write an adapter and run `testAdapter()` from `@javaabu/forms/testing`.
 
 ## Docs
@@ -36,11 +38,13 @@ Paths are relative to this file. In a project, that's node_modules/@javaabu/form
 - [Map input](docs/basic-usage/map-input.md): points, radius, polygons
 - [Conditional wrapper](docs/basic-usage/conditional-wrapper.md): enabling and showing sections from another field
 - [Display](docs/basic-usage/display.md): Alert, Card, Accordion, Tabs, Modal, Status, text entries, Infolist
-- [Listing pages](docs/basic-usage/listing.md): Table, bulk actions, filters, per page, search, no items, pagination
+- [Listing pages](docs/basic-usage/listing.md): Table, bulk actions, reading the selection (useTableSelection), filters, per page, search, no items, pagination
+- [Icons](docs/basic-usage/icons.md): Blade's bundled icon names on buttons and Icon, icon fonts, how adapters draw them
 - [Validation errors](docs/basic-usage/errors.md): sources, keys, bags, the summary, accessibility
 - [Translations](docs/basic-usage/translations.md): @javaabu/i18n, overriding lines, generated labels, every key
 - [UI adapters](docs/advanced-usage/adapters.md): choosing, replacing components, writing and testing an adapter, every slot
 - [shadcn/ui](docs/advanced-usage/shadcn.md): createShadcnAdapter and the components it needs
+- [Custom fields](docs/advanced-usage/custom-fields.md): field components of your own that plug into Form (useForm() data, reset, ConditionalWrapper, errors)
 - [Inertia](docs/advanced-usage/inertia.md): the Inertia router, useForm(), links, fetchRouter, custom routers
 - [Laravel Wayfinder](docs/advanced-usage/wayfinder.md): routes as Form action
 - [Dhivehi and RTL](docs/advanced-usage/dhivehi-and-rtl.md): direction, Thaana typing, fonts, lines to review

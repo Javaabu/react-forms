@@ -121,7 +121,7 @@ The source of the HTML adapter (`src/adapters/html/index.tsx`) is the reference:
 | `File`, `Image` | `FileSlotProps`, `ImageSlotProps` | File input; image input with a preview |
 | `Wysiwyg` | `WysiwygSlotProps` | A rich text editor that reports HTML |
 | `Map` | `MapSlotProps` | A map to pick a point, a radius or polygons. `MapInput` renders the coordinate fields itself |
-| `Button`, `LinkButton`, `Link`, `ButtonGroup`, `Icon`, `ActionMenu` | `…SlotProps` | Buttons (`color` is a Blade colour: `primary`, `danger`, `outline-secondary`, …), links (an Inertia adapter can swap `Link`), icons by name |
+| `Button`, `LinkButton`, `Link`, `ButtonGroup`, `Icon`, `ActionMenu` | `…SlotProps` | Buttons (`color` is a Blade colour: `primary`, `danger`, `outline-secondary`, …), links (an Inertia adapter can swap `Link`), icons by name: Blade's bundled names (`resolveIconName()` gives the bundled icon, or `null` for icon font classes; see [Icons](../basic-usage/icons)) |
 | `Alert`, `Card`, `CardHeader`, `CardTitle`, `CardSubtitle`, `CardFooter`, `Accordion`, `Tabs`, `NavTabs`, `Modal`, `Status`, `DescriptionList`, `DescriptionItem` | `…SlotProps` | Display components |
 | `Table`, `TableHeader`, `TableBody`, `TableRow`, `TableHead`, `TableCell`, `EmptyState`, `Pagination` | native props, `EmptyStateSlotProps`, `PaginationSlotProps` | Listing pages |
 

@@ -112,7 +112,7 @@ import { Button, ButtonGroup, LinkButton, Submit } from "@javaabu/forms"
 | `LinkButton` | `link-button` | `url`, `color`, `size`, `disabled`, `startIcon`, `endIcon`, and `<a>` attributes. |
 | `ButtonGroup` | `button-group` | `inline` (default `true`; `false` stacks the buttons). |
 
-`color` takes Blade's Bootstrap colours: `primary`, `secondary`, `success`, `danger`, `warning`, `info`, `light`, `dark`, `link` and `outline-*`. Each adapter maps them to its own variants (Onu: `danger` is `destructive`, `light` is `outline`, …). Icons are names (`plus`, `download`, `close`, `chevron-left`, …) that the adapter draws.
+`color` takes Blade's Bootstrap colours: `primary`, `secondary`, `success`, `danger`, `warning`, `info`, `light`, `dark`, `link` and `outline-*`. Each adapter maps them to its own variants (Onu: `danger` is `destructive`, `light` is `outline`, …). `startIcon` and `endIcon` take Blade's icon names (`pencil`, `trash-2`, `eye`, `check`, `plus`, …) or icon font classes; see [Icons](./icons).
 
 # Labels, help and errors
 

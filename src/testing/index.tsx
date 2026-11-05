@@ -14,6 +14,7 @@ import { Date as DateField, Time } from "../components/dates"
 import { File } from "../components/files"
 import { Wysiwyg } from "../components/wysiwyg"
 import { Submit, LinkButton } from "../components/buttons"
+import { Icon } from "../components/icon"
 import { Alert, Card, Status, Tabs, TabsPane, Accordion, TextEntry } from "../components/display"
 import { Table, TableRow, TableCell, TableHeading, NoItems, Pagination } from "../components/listing"
 
@@ -289,6 +290,24 @@ export function adapterConformance(
           </Form>,
         )
         equal(formData(container).get("content"), "<p>Hello</p>", "submitted HTML")
+      },
+    },
+    {
+      name: "Icon and button icons draw Blade's bundled names, hidden from screen readers",
+      run: () => {
+        const { container } = mount(
+          <>
+            <Icon name="eye" />
+            <LinkButton url="/edit" startIcon="pencil">
+              Edit
+            </LinkButton>
+            <Submit startIcon="trash-2" endIcon="check">
+              Delete
+            </Submit>
+          </>,
+        )
+        const drawn = container.querySelectorAll('svg[aria-hidden="true"], i[aria-hidden="true"]')
+        equal(drawn.length >= 4, true, "an aria-hidden icon for each name")
       },
     },
     {

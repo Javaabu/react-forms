@@ -8,6 +8,8 @@ import { MapInput } from "../../components/map-input"
 import { Select2 } from "../../components/select"
 import { Time } from "../../components/dates"
 import { Wysiwyg } from "../../components/wysiwyg"
+import { Icon } from "../../components/icon"
+import { LinkButton, Submit } from "../../components/buttons"
 import { FormsProvider } from "../../core/provider"
 import { pageWindow } from "."
 
@@ -143,6 +145,35 @@ describe("HTML adapter widgets", () => {
   it("windows long page lists", () => {
     expect(pageWindow(5, 10)).toEqual([1, null, 4, 5, 6, null, 10])
     expect(pageWindow(1, 3)).toEqual([1, 2, 3])
+  })
+})
+
+describe("icons", () => {
+  it("draws Blade's bundled icons on buttons, the aliases and icon font classes", () => {
+    render(
+      <>
+        <LinkButton url="/roles/1/edit" startIcon="pencil">
+          ބަދަލުކުރޭ
+        </LinkButton>
+        <Submit color="danger" startIcon="trash-2" endIcon="chevron-right">
+          ފޮހެލާ
+        </Submit>
+        <Icon name="close" />
+        <Icon name="fa-solid fa-mosque" className="text-primary" />
+      </>,
+    )
+    const icons = [...document.querySelectorAll("[data-slot=icon]")]
+    expect(icons.map((icon) => icon.getAttribute("data-icon"))).toEqual([
+      "pencil",
+      "trash-2",
+      "chevron-right",
+      "x",
+      "fa-solid fa-mosque",
+    ])
+    expect(icons[0]!.querySelector("path")).toHaveAttribute("d")
+    expect(icons[4]!.tagName).toBe("I")
+    expect(icons[4]).toHaveClass("fa-solid", "fa-mosque", "text-primary")
+    for (const icon of icons) expect(icon).toHaveAttribute("aria-hidden", "true")
   })
 })
 

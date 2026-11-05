@@ -23,17 +23,58 @@ import type * as React from "react"
 export type ButtonColor =
   "primary" | "secondary" | "success" | "danger" | "warning" | "info" | "light" | "dark" | "link" | `outline-${string}`
 
-/** The icons the components use. Adapters map them to their icon set. */
-export type IconName =
-  | "download"
-  | "close"
-  | "plus"
-  | "error"
-  | "chevron-up"
-  | "chevron-down"
-  | "chevron-left"
-  | "chevron-right"
-  | "chevrons-up-down"
+/** The Lucide icons javaabu/forms (Blade) bundles, by the same names. Every adapter draws them. */
+export const BUNDLED_ICONS = [
+  "arrow-down",
+  "arrow-up",
+  "arrow-up-down",
+  "calendar",
+  "check",
+  "chevron-down",
+  "chevron-left",
+  "chevron-right",
+  "chevron-up",
+  "chevrons-up-down",
+  "circle-alert",
+  "circle-check",
+  "circle-x",
+  "clock",
+  "download",
+  "ellipsis",
+  "external-link",
+  "eye",
+  "file",
+  "file-text",
+  "image",
+  "info",
+  "loader-circle",
+  "map-pin",
+  "pencil",
+  "plus",
+  "search",
+  "trash-2",
+  "triangle-alert",
+  "upload",
+  "x",
+] as const
+
+export type BundledIconName = (typeof BUNDLED_ICONS)[number]
+
+/** Older names, kept as aliases: `close` is `x`, `error` is `circle-alert`. */
+export const ICON_ALIASES = { close: "x", error: "circle-alert" } as const satisfies Record<string, BundledIconName>
+
+/**
+ * An icon for `startIcon`, `endIcon` and the `Icon` slot: a bundled Lucide name
+ * (`pencil`, `trash-2`, …, as in Blade), an alias, or icon font classes
+ * (`fa-solid fa-mosque`), which render as `<i class>` like Blade's.
+ */
+export type IconName = BundledIconName | keyof typeof ICON_ALIASES | (string & {})
+
+/** The bundled icon a name draws, or `null` for icon font classes. */
+export function resolveIconName(name: IconName): BundledIconName | null {
+  if (name in ICON_ALIASES) return ICON_ALIASES[name as keyof typeof ICON_ALIASES]
+  return (BUNDLED_ICONS as readonly string[]).includes(name) ? (name as BundledIconName) : null
+}
 
 /** Status tones (`Status`, enum badges). */
 export type StatusTone = "success" | "danger" | "warning" | "info" | "neutral"

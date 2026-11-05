@@ -61,7 +61,7 @@ export {
   type HttpMethod,
   type FormValues,
 } from "./core/router"
-export { useWatchField, type WatchedField } from "./core/registry"
+export { useWatchField, usePublishField, type WatchedField, type FieldEntry, type FieldKind } from "./core/registry"
 
 // Form scaffolding
 export {
@@ -83,8 +83,18 @@ export type {
   LabelProps,
   ErrorsProps,
 } from "./components/form"
-export { useField, useFieldNames, type FieldProps, type PlaceholderProps } from "./components/field"
+export {
+  useField,
+  useFieldNames,
+  useFieldState,
+  splitFieldProps,
+  type FieldProps,
+  type PlaceholderProps,
+  type UseFieldOptions,
+  type FieldStateOptions,
+} from "./components/field"
 export { Button, Submit, LinkButton, ButtonGroup } from "./components/buttons"
+export { Icon, type IconProps } from "./components/icon"
 export type { ButtonProps, LinkButtonProps, ButtonGroupProps } from "./components/buttons"
 
 // Inputs
@@ -153,6 +163,7 @@ export {
   SearchForm,
   NoItems,
   Pagination,
+  useTableSelection,
 } from "./components/listing"
 export type {
   TableProps,
@@ -168,6 +179,7 @@ export type {
   PaginationProps,
   LaravelPaginationMeta,
   LaravelResourceCollection,
+  TableSelection,
 } from "./components/listing"
 
 // Helpers

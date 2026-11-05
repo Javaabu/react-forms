@@ -4,6 +4,7 @@ import * as React from "react"
 
 import {
   defineAdapter,
+  resolveIconName,
   type AccordionSlotProps,
   type ActionMenuSlotProps,
   type AlertSlotProps,
@@ -21,7 +22,6 @@ import {
   type FileSlotProps,
   type FormSlotProps,
   type HelpTextSlotProps,
-  type IconName,
   type IconSlotProps,
   type ImageSlotProps,
   type InputSlotProps,
@@ -46,6 +46,7 @@ import { useRemoteOptions } from "../../core/remote"
 import { TabPanel, useReveal } from "../../core/reveal"
 import { useFormsTranslation } from "../../core/strings"
 import { thaanaKeyDown } from "../../core/thaana"
+import { LUCIDE_ICONS } from "./icons"
 
 /**
  * The HTML adapter renders plain, unstyled elements with `data-slot` attributes
@@ -573,27 +574,18 @@ function MapPlaceholder() {
 /* Buttons, links, icons                                                      */
 /* -------------------------------------------------------------------------- */
 
-const ICON_PATHS: Record<IconName, string> = {
-  download: "M12 3v12m0 0-4-4m4 4 4-4M5 21h14",
-  close: "M6 6l12 12M18 6 6 18",
-  plus: "M12 5v14M5 12h14",
-  error: "M12 8v5m0 3h.01M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z",
-  "chevron-up": "m6 15 6-6 6 6",
-  "chevron-down": "m6 9 6 6 6-6",
-  "chevron-left": "m15 6-6 6 6 6",
-  "chevron-right": "m9 6 6 6-6 6",
-  "chevrons-up-down": "m7 15 5 5 5-5M7 9l5-5 5 5",
-}
-
 function Icon({ name, size = "md", className }: IconSlotProps) {
   const { direction } = useFormsTranslation()
+  const bundled = resolveIconName(name)
+  // Anything else is icon font classes, as in Blade.
+  if (!bundled) return <i data-slot="icon" data-icon={name} className={cx(name, className)} aria-hidden="true" />
   const px = size === "sm" ? 14 : 16
   // Arrows that point to a side follow the reading direction.
-  const flip = (name === "chevron-left" || name === "chevron-right") && direction === "rtl"
+  const flip = (bundled === "chevron-left" || bundled === "chevron-right") && direction === "rtl"
   return (
     <svg
       data-slot="icon"
-      data-icon={name}
+      data-icon={bundled}
       width={px}
       height={px}
       viewBox="0 0 24 24"
@@ -603,11 +595,12 @@ function Icon({ name, size = "md", className }: IconSlotProps) {
       strokeLinecap="round"
       strokeLinejoin="round"
       aria-hidden="true"
+      focusable="false"
       data-flipped={flip || undefined}
       style={flip ? { transform: "scaleX(-1)" } : undefined}
       className={className}
     >
-      <path d={ICON_PATHS[name]} />
+      {LUCIDE_ICONS[bundled].map(([tag, attrs], i) => React.createElement(tag, { key: i, ...attrs }))}
     </svg>
   )
 }

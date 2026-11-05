@@ -24,6 +24,7 @@ import {
   FormField,
   HelpText,
   Icon,
+  SEMANTIC_ICON_NAMES,
   ImageInput,
   Label,
   LinkButton,
@@ -51,10 +52,14 @@ import {
   toast,
   type ButtonVariant,
   type ChoiceOption,
+  type SemanticIconName,
 } from "@javaabu/onu"
 
 import {
   defineAdapter,
+  resolveIconName,
+  type BundledIconName,
+  type IconName,
   type AccordionSlotProps,
   type ActionMenuSlotProps,
   type AlertSlotProps,
@@ -90,6 +95,7 @@ import {
   type TextareaSlotProps,
 } from "../../core/adapter"
 import { TabPanel } from "../../core/reveal"
+import { html } from "../html"
 import { parseDateValue, toDateString, toDateTimeString, toTimeString } from "../../support/dates"
 
 /** Bootstrap colours (Blade's `color`) and the Onu button variants they map to. */
@@ -359,20 +365,68 @@ function OnuImage({ shape, cover, fullWidth, className, name, ...props }: ImageS
 /* Buttons and links                                                          */
 /* -------------------------------------------------------------------------- */
 
-function OnuButton({ color, size, ...props }: ButtonSlotProps) {
-  return <Button {...props} variant={colorToVariant(color)} size={size ? BUTTON_SIZES[size] : undefined} />
+function OnuButton({ color, size, startIcon, endIcon, ...props }: ButtonSlotProps) {
+  return (
+    <Button
+      {...props}
+      startIcon={startIcon ? toOnuIcon(startIcon) : undefined}
+      endIcon={endIcon ? toOnuIcon(endIcon) : undefined}
+      variant={colorToVariant(color)}
+      size={size ? BUTTON_SIZES[size] : undefined}
+    />
+  )
 }
 
-function OnuLinkButton({ color, size, ...props }: LinkButtonSlotProps) {
-  return <LinkButton {...props} variant={colorToVariant(color)} size={size ? BUTTON_SIZES[size] : undefined} />
+function OnuLinkButton({ color, size, startIcon, endIcon, ...props }: LinkButtonSlotProps) {
+  return (
+    <LinkButton
+      {...props}
+      startIcon={startIcon ? toOnuIcon(startIcon) : undefined}
+      endIcon={endIcon ? toOnuIcon(endIcon) : undefined}
+      variant={colorToVariant(color)}
+      size={size ? BUTTON_SIZES[size] : undefined}
+    />
+  )
 }
 
 function OnuButtonGroup(props: ButtonGroupSlotProps) {
   return <ButtonGroup {...props} />
 }
 
+/** Onu's semantic names for the bundled (Blade) icons whose names differ; the rest share Onu's names. */
+const ONU_ICON_NAMES: Partial<Record<BundledIconName, SemanticIconName>> = {
+  "arrow-up-down": "sort",
+  "circle-check": "success",
+  ellipsis: "more",
+  "loader-circle": "loading",
+  pencil: "edit",
+  "trash-2": "trash",
+  "triangle-alert": "warning",
+  x: "close",
+}
+const ONU_HAS = new Set<string>(SEMANTIC_ICON_NAMES)
+const HtmlIcon = html.components.Icon!
+
+/**
+ * A forms icon name as Onu's `Icon` / `startIcon`: Onu's semantic name when it has the icon
+ * (so `OnuProvider icons` overrides apply), else the bundled Lucide glyph, else icon font classes.
+ */
+function toOnuIcon(name: IconName): SemanticIconName | React.ReactElement {
+  const bundled = resolveIconName(name)
+  const semantic = bundled ? (ONU_ICON_NAMES[bundled] ?? (ONU_HAS.has(bundled) ? bundled : null)) : null
+  if (semantic) return semantic as SemanticIconName
+  return (
+    <Icon
+      name={name}
+      fallback={bundled ? <HtmlIcon name={bundled} /> : <i data-slot="icon" className={name} aria-hidden="true" />}
+    />
+  )
+}
+
 function OnuIcon({ name, size, className }: IconSlotProps) {
-  return <Icon name={name} size={size === "sm" ? "sm" : undefined} className={className} />
+  const icon = toOnuIcon(name)
+  const sized = { size: size === "sm" ? ("sm" as const) : undefined, className }
+  return typeof icon === "string" ? <Icon name={icon} {...sized} /> : React.cloneElement(icon, sized)
 }
 
 function OnuActionMenu({ label, trigger, items }: ActionMenuSlotProps) {

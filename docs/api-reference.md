@@ -27,7 +27,7 @@ Every module is marked `"use client"`. Builds: ESM (`.js`), CommonJS (`.cjs`) an
 | Inputs | `Input`, `Text`, `Email`, `Password`, `Number`, `Tel`, `Url`, `Hidden`, `Latitude`, `Longitude`, `Textarea` | [Inputs and textarea](./basic-usage/inputs-and-textarea) |
 | Choices | `Checkbox`, `Radio`, `Select`, `Select2` | [Checkboxes and radios](./basic-usage/checkbox-and-radio), [Selects](./basic-usage/select-elements), [Select2](./basic-usage/select2) |
 | Dates, files, rich text, maps | `Date`, `Datetime`, `Time`, `File`, `FileUpload`, `Image`, `ImageUpload`, `Wysiwyg`, `MapInput` | [Dates](./basic-usage/dates), [Files](./basic-usage/file-inputs), [WYSIWYG](./basic-usage/wysiwyg), [Map input](./basic-usage/map-input) |
-| Buttons | `Button`, `Submit`, `LinkButton`, `ButtonGroup` | [Forms and buttons](./basic-usage/forms-and-buttons) |
+| Buttons and icons | `Button`, `Submit`, `LinkButton`, `ButtonGroup`, `Icon` | [Forms and buttons](./basic-usage/forms-and-buttons), [Icons](./basic-usage/icons) |
 | Display | `Alert`, `Card`, `CardHeader`, `CardTitle`, `CardSubtitle`, `CardFooter`, `Accordion`, `AccordionItem`, `Tabs`, `TabsPane`, `NavTabs`, `Modal`, `Status`, `ConditionalLink`, `ConditionalWrapper`, `TextEntry`, `BooleanEntry`, `Infolist`, `FormattedValue` | [Display](./basic-usage/display), [Conditional wrapper](./basic-usage/conditional-wrapper) |
 | Listing | `Table`, `TableRow`, `TableCell`, `TableHeading`, `TableEmptyRow`, `BulkActions`, `Filter`, `FilterSubmit`, `PerPage`, `SearchForm`, `NoItems`, `Pagination` | [Listing pages](./basic-usage/listing) |
 
@@ -46,6 +46,10 @@ Every module is marked `"use client"`. Builds: ESM (`.js`), CommonJS (`.cjs`) an
 | `useFieldNames(props)` | The id, label and placeholder generated from a name |
 | `useBoundModel()`, `useOldInput()`, `useFieldValue(name, model, default)` | Binding |
 | `useWatchField(selector)` | Another field's value and checked state, by `#id` or name |
+| `splitFieldProps(props)` | `{ field, rest }`: the shared `FieldProps` apart from your control's props. For [custom fields](./advanced-usage/custom-fields) |
+| `useFieldState(name, initial, options?)` | `[value, setValue]`: reads and writes Inertia `useForm()` data, resets with the form, clears the field's errors on change. For custom fields |
+| `usePublishField(entry)` | Publishes a field's value so `ConditionalWrapper` and `useWatchField` see it. For custom fields |
+| `useTableSelection()` | The surrounding `Table`'s `model`, `selected` and `rows` ids and `setSelected()`, or `null`. For content in `bulkForm` |
 | `useSetting(key)`, `useCsrfToken()` | `get_setting()`, the CSRF token |
 | `useRemoteOptions(remote, query)` | Server-searched select options, for adapters |
 | `useReveal(ref, onReveal)` | Calls `onReveal` when an invalid field inside `ref` needs to be shown, for adapters' tabs and accordions |
@@ -70,7 +74,8 @@ Every module is marked `"use client"`. Builds: ESM (`.js`), CommonJS (`.cjs`) an
 | `getBoundValue(target, name)` | The value at a field name (bracket or dot notation) on a model |
 | `DEFAULT_SETTINGS` | The `get_setting()` defaults: `per_page`, `max_upload_file_size`, `max_image_file_size` |
 | `en`, `dv`, `STRINGS_PREFIX` | The bundled lines and their key prefix (`forms::strings.`) |
+| `BUNDLED_ICONS`, `ICON_ALIASES`, `resolveIconName(name)` | Blade's bundled Lucide icon names, the older aliases (`close`, `error`), and the bundled icon a name draws (`null` for icon font classes). For adapters |
 
 # Types
 
-The adapter contract (`FormsAdapter`, `FormsComponents` and one `…SlotProps` per slot), the router contract (`FormsRouter`, `SubmitRequest`, `SubmitCallbacks`, `VisitOptions`, `FormAction`, `RouteDefinition`, `RouteFormDefinition`), errors (`FormErrors`, `PageErrors`, `ValidationPayload`), and every component's `…Props` are exported from `@javaabu/forms`.
+The adapter contract (`FormsAdapter`, `FormsComponents` and one `…SlotProps` per slot), the router contract (`FormsRouter`, `SubmitRequest`, `SubmitCallbacks`, `VisitOptions`, `FormAction`, `RouteDefinition`, `RouteFormDefinition`), errors (`FormErrors`, `PageErrors`, `ValidationPayload`), icons (`IconName`, `BundledIconName`), custom fields (`FieldProps`, `UseFieldOptions`, `FieldStateOptions`, `FieldEntry`, `FieldKind`), `TableSelection`, and every component's `…Props` are exported from `@javaabu/forms`.

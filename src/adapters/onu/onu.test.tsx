@@ -12,7 +12,9 @@ import userEvent from "@testing-library/user-event"
 
 import { FormsProvider } from "../../core/provider"
 import { Model } from "../../core/binding"
+import { LinkButton, Submit } from "../../components/buttons"
 import { Checkbox, Radio } from "../../components/checkbox"
+import { Icon } from "../../components/icon"
 import { ConditionalWrapper, TextEntry } from "../../components/display"
 import { File } from "../../components/files"
 import { Form } from "../../components/form"
@@ -368,5 +370,27 @@ describe("locales", () => {
     expect(screen.getByLabelText("Title")).toHaveValue("Two")
     fireEvent.change(screen.getByLabelText("Title"), { target: { value: "Typed" } })
     expect(screen.getByLabelText("Title")).toHaveValue("Typed")
+  })
+})
+
+describe("icons", () => {
+  it("maps Blade's icon names to Onu's, and draws the ones Onu lacks", () => {
+    render(
+      <>
+        <LinkButton url="/roles/1/edit" startIcon="pencil">
+          ބަދަލުކުރޭ
+        </LinkButton>
+        <Submit color="danger" startIcon="trash-2">
+          ފޮހެލާ
+        </Submit>
+        <Icon name="circle-x" />
+        <Icon name="fa-solid fa-mosque" />
+      </>,
+    )
+    expect(screen.getByText("ބަދަލުކުރޭ").closest("a")!.querySelector("[data-icon-name=edit]")).toBeInTheDocument()
+    expect(screen.getByText("ފޮހެލާ").closest("button")!.querySelector("[data-icon-name=trash]")).toBeInTheDocument()
+    // Onu has no circle-x: the bundled Lucide glyph draws it.
+    expect(document.querySelector("[data-icon=circle-x] circle")).toBeInTheDocument()
+    expect(document.querySelector("i[data-icon-name='fa-solid fa-mosque']")).toHaveClass("fa-solid", "fa-mosque")
   })
 })
