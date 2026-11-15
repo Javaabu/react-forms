@@ -54,6 +54,9 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: 22
+          # This job installs into its own store, so there's nothing to cache. With the cache on, setup-node
+          # fails its post step when no earlier cache was restored, because the default store doesn't exist.
+          package-manager-cache: false
       - name: Install @javaabu/forms from Git into a new app
         env:
           SHA: ${{ github.event.pull_request.head.sha || github.sha }}
