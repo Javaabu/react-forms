@@ -25,6 +25,48 @@ With pnpm 10, allow the build scripts of the package and of `@javaabu/i18n` in y
 
 From pnpm 10.34, packages installed from Git must be allowed by their exact source: pnpm prints the line to add (`"@javaabu/forms@https://codeload.github.com/Javaabu/react-forms/tar.gz/<commit>"`), or run `pnpm approve-builds`. This goes away once the package is on npm.
 
+## With a script tag
+
+For a page without a bundler (a Blade view, a static page, a quick prototype), load `dist/forms.iife.js`. It puts everything in `@javaabu/forms` and the plain HTML adapter on `window.JavaabuForms`, with React, ReactDOM and `@javaabu/i18n` bundled in, so nothing else has to load first:
+
+```html
+<html lang="dv" dir="rtl">
+<head>
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <script src="https://unpkg.com/@javaabu/forms/dist/forms.iife.js"></script>
+</head>
+<body>
+    <div id="app"></div>
+    <script>
+        const { h, mount, i18n, Form, Text, Select, Submit } = JavaabuForms
+
+        i18n.setLocale("dv")
+
+        mount(
+            "#app",
+            h(Form, { action: "/enquiries", model: { name: "ޢަލީ" } },
+                h(Text, { name: "name", label: "ނަން", thaana: true, required: true }),
+                h(Select, { name: "topic", label: "ބާވަތް", options: { general: "އާންމު", support: "އެހީ" } }),
+                h(Submit, null, "ފޮނުވާ"),
+            ),
+            { errors: {} },
+        )
+    </script>
+</body>
+</html>
+```
+
+| On `JavaabuForms` | What it is |
+| --- | --- |
+| Every export of `@javaabu/forms` | `Form`, `Text`, `Select`, `Table`, `FormsProvider`, `fetchRouter`, … |
+| `html`, `pageWindow` | The plain HTML adapter (the default) |
+| `h` | `React.createElement`: `h(Component, props, ...children)` |
+| `mount(target, node, options?)` | Renders `node` into an element or selector inside a `FormsProvider` with `options` (any [`FormsProvider` prop](#formsprovider)); returns the React root |
+| `React` | The bundled React, for hooks |
+| `i18n` | The bundled `@javaabu/i18n`: `i18n.setLocale("dv")`, `i18n.load(…)` for your own strings |
+
+The file is about 330 kB (React included), so use it where there's no build step. In an app with a bundler, or a page that already loads React, import the ES modules instead. Until the package is on npm, build the file yourself (`pnpm build`) and serve it from your app. [`examples/script-tag.html`](https://github.com/Javaabu/react-forms/blob/next-gen/examples/script-tag.html) is a complete page that opens straight from disk.
+
 # Choose a UI adapter
 
 Without an adapter, the components render plain HTML. Pick the adapter for your UI kit once, at the root of your app.
@@ -161,7 +203,7 @@ Strings come from [`@javaabu/i18n`](https://github.com/Javaabu/i18n) and follow 
 
 # Examples
 
-The repository has a page per integration in `examples/` (Onu, shadcn/ui, plain HTML, Inertia and fetch, the last two against a mock Laravel endpoint), each with a Dhivehi version (`?dv`):
+The repository has a page per integration in `examples/` (Onu, shadcn/ui, plain HTML, Inertia and fetch, the last two against a mock Laravel endpoint), each with a Dhivehi version (`?dv`), and `examples/script-tag.html`, which uses the `<script>` tag build with no bundler (run `pnpm build`, then open the file):
 
 ```bash
 git clone https://github.com/Javaabu/react-forms && cd react-forms

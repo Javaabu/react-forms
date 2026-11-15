@@ -1,0 +1,85 @@
+<!doctype html>
+<!-- No bundler, no JSX and no server: run `pnpm build`, then open this file in a browser. From a site, use
+     https://unpkg.com/@javaabu/forms/dist/forms.iife.js instead of the local path. React is bundled in. -->
+<html lang="dv" dir="rtl">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="csrf-token" content="playground-token" />
+    <title>Script tag - @javaabu/forms</title>
+    <style>
+      body {
+        font-family: system-ui, "MV Faseyha", "Faruma", sans-serif;
+        max-width: 40rem;
+        margin-inline: auto;
+        padding: 1.5rem;
+      }
+      form > * + * {
+        margin-block-start: 1rem;
+      }
+      label {
+        display: block;
+        font-weight: 600;
+        margin-block-end: 0.25rem;
+      }
+      input,
+      select,
+      textarea {
+        width: 100%;
+        padding: 0.5rem;
+        box-sizing: border-box;
+      }
+      .invalid-feedback,
+      [role="alert"] {
+        color: #b91c1c;
+      }
+      #result {
+        margin-block-start: 1.5rem;
+        white-space: pre-wrap;
+      }
+    </style>
+    <script src="../dist/forms.iife.js"></script>
+  </head>
+  <body>
+    <h1>ގުޅުއްވާ</h1>
+    <div id="app"></div>
+    <pre id="result"></pre>
+    <script>
+      const { h, mount, i18n, Form, Text, Email, Select, Textarea, Submit } = JavaabuForms
+
+      // The components' own strings (buttons, errors) follow @javaabu/i18n's locale.
+      i18n.setLocale("dv")
+
+      const enquiry = { name: "ޢަލީ ޙަސަން", topic: "general" }
+
+      mount(
+        "#app",
+        h(
+          Form,
+          {
+            action: "/enquiries",
+            model: enquiry,
+            errors: { email: "އީމެއިލް ލިޔުއްވާ." },
+            // Without a server, show what would be sent. Return a promise to see the busy state.
+            onSubmit: (values) =>
+              new Promise((resolve) =>
+                setTimeout(() => {
+                  document.getElementById("result").textContent = JSON.stringify(values, null, 2)
+                  resolve(values)
+                }, 500),
+              ),
+          },
+          h(Text, { name: "name", label: "ނަން", thaana: true, required: true }),
+          h(Email, { name: "email", label: "އީމެއިލް", required: true }),
+          h(Select, {
+            name: "topic",
+            label: "ބާވަތް",
+            options: { general: "އާންމު", billing: "ބިލު", support: "އެހީ" },
+          }),
+          h(Textarea, { name: "message", label: "މެސެޖު", thaana: true, rows: 4 }),
+          h(Submit, null, "ފޮނުވާ"),
+        ),
+      )
+    </script>
+  </body>
+</html>

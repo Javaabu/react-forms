@@ -36,6 +36,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: false
       - run: pnpm build
+      - name: Script tag build
+        run: pnpm test:browser-build
       - name: Examples
         run: pnpm examples:build
 

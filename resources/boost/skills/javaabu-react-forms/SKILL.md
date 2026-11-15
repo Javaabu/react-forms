@@ -93,6 +93,7 @@ What this gets you, with no extra code: values from `product`, ids and translate
 - Use `useForm()` only when the page needs the data in code, and then pass it: `<Form form={form} action={store()}>`.
 - Add `thaana` to free-text fields that take Dhivehi. Labels you write go through `__()` from `@javaabu/i18n`; add the Dhivehi line to `lang/dv.json`.
 - Logical CSS only (`ms-`, `pe-`, `start-`, `text-start`).
+- On a page with no bundler (a plain Blade view), load `dist/forms.iife.js`: the components are on `window.JavaabuForms` with React bundled in. Build with `h(Text, { name: "name" })` and `mount("#app", node, providerProps)`. Never load it next to a bundled `@javaabu/forms` or React.
 - To change one component's look, replace its slot: `<FormsProvider components={{ Select: MySelect }}>`. Don't wrap or copy the component.
 - A field component of your own (or another package's) uses the hooks the built-in fields use: `splitFieldProps`, `useField`, `useFieldValue`, `useFieldState`, `usePublishField`. Then it gets `useForm()` data, reset, `ConditionalWrapper` and errors like the built-in fields. Don't bind it by hand with `value={form.data.x} onChange={…}`. See [Custom fields](references/custom-fields.md).
 

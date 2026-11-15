@@ -52,6 +52,16 @@ import { onu } from "@javaabu/forms/onu"
 </FormsProvider>
 ```
 
+Without a bundler, load the `<script>` tag build. It puts the components on `window.JavaabuForms`, with React bundled in:
+
+```html
+<script src="https://unpkg.com/@javaabu/forms/dist/forms.iife.js"></script>
+<script>
+  const { h, mount, Form, Text, Submit } = JavaabuForms
+  mount("#app", h(Form, { action: "/users" }, h(Text, { name: "name" }), h(Submit)))
+</script>
+```
+
 See [Installation and setup](docs/installation-and-setup.md).
 
 ## Documentation

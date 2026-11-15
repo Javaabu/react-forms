@@ -15,6 +15,7 @@ Paths are relative to this file. In a project, that's node_modules/@javaabu/form
 - With Inertia, set `router={inertia}` (from `@javaabu/forms/inertia`) on the root `FormsProvider`, then use plain forms: `<Form model={user} action={update}>`. Or pass `useForm()` to `<Form form={form}>`. Don't wire `onSubmit`, `errors` or `processing` by hand for Inertia.
 - Use Wayfinder routes as `action`: `action={store()}`, or the route function itself, `action={update}`, which is called with the form's `model`. The method comes from the route; `PUT`/`PATCH`/`DELETE` are spoofed with `_method`.
 - File inputs need `<Form files>`. Don't nest forms.
+- Without a bundler, load `dist/forms.iife.js` (`window.JavaabuForms`, React bundled in) and build elements with `h(Component, props, ...children)` and `mount("#app", node, providerProps)`. Don't load it in an app that bundles `@javaabu/forms` or React: there would be two Reacts.
 - Add `thaana` to free-text fields that take Dhivehi. Never hard-code user-facing English: use `__()` from `@javaabu/i18n` for your labels. Package strings are `forms::strings.*`, changed in `lang/vendor/forms/{locale}/strings.php`.
 - Use logical CSS (`ms-`, `pe-`, `start-`, `text-start`), never `left`/`right`, so pages work in RTL.
 - For a field component of your own (or another package's), use `splitFieldProps`, `useField`, `useFieldValue`, `useFieldState` and `usePublishField` (see Custom fields), not `value`/`onChange` bound by hand.
@@ -25,7 +26,7 @@ Paths are relative to this file. In a project, that's node_modules/@javaabu/form
 
 - [Introduction](docs/intro.md): what the package does
 - [Requirements](docs/requirements.md): versions and optional peers
-- [Installation and setup](docs/installation-and-setup.md): installing, adapters, FormsProvider, Laravel and Inertia setup
+- [Installation and setup](docs/installation-and-setup.md): installing, the `<script>` tag build, adapters, FormsProvider, Laravel and Inertia setup
 - [Forms and buttons](docs/basic-usage/forms-and-buttons.md): Form, method spoofing, CSRF, submit modes, buttons
 - [Model binding](docs/basic-usage/model-binding.md): value precedence, Model, old input, checkboxes, selects, dates
 - [Inputs and textarea](docs/basic-usage/inputs-and-textarea.md): Text, Email, Password, Number, Tel, Url, Hidden, Textarea, shared field props
