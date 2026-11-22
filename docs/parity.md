@@ -40,7 +40,7 @@ sidebar_position: 1.6
 | `TextEntry`, `BooleanEntry`, `Infolist` | `text-entry`, `boolean-entry`, `infolist` | ✅ | |
 | `FormattedValue` | `formatted-value` | ✅ | New in v2. |
 | `Table`, `TableRow`, `TableCell`, `TableHeading`, `TableEmptyRow` | `table`, `table.row`, `table.cell`, `table.heading`, `table.empty-row` | ✅ | `Table`'s named slots (`bulkForm`, `headers`, `beforeTable`, …) are props. |
-| `useTableSelection()` | — | ⚛️ | The table's selection for content inside it (`bulkForm`): selected and page row ids, `setSelected()` ([#22](https://github.com/Javaabu/react-forms/issues/22)). Blade's bulk actions read the checkboxes with js-utilities. |
+| `useTableSelection()` | — | ⚛️ | The table's selection for content inside it (`bulkForm`): selected and page row ids (a row that leaves the page leaves the selection), `setSelected()` ([#22](https://github.com/Javaabu/react-forms/issues/22)). Blade's bulk actions read the checkboxes with js-utilities. |
 | `splitFieldProps`, `useField`, `useFieldValue`, `useFieldState`, `usePublishField` | — | ⚛️ | Hooks for [custom fields](./advanced-usage/custom-fields) that behave like the built-in ones: `useForm()` data, reset, `ConditionalWrapper`, errors ([#23](https://github.com/Javaabu/react-forms/issues/23)). Blade has no counterpart: a Blade field is markup that submits natively. |
 | `BulkActions`, `Filter`, `FilterSubmit`, `PerPage`, `SearchForm`, `NoItems` | `bulk-actions`, `filter`, `filter-submit`, `per-page`, `search-form`, `no-items` | ✅ | |
 | `Pagination` | `pagination` | ✅ | New in v2. Takes a paginator's JSON in React. |

@@ -76,7 +76,7 @@ export default function Index({ users, query }) {
 
 # Reading the selection
 
-Content inside a `Table` (its `bulkForm`, `beforeTable`, rows, …) reads the row selection with `useTableSelection()`, for "3 selected" or "select all 1,234" in a bulk actions bar. It returns `null` outside a table.
+Content inside a `Table` (its `bulkForm`, `beforeTable`, rows, …) reads the row selection with `useTableSelection()`, for "3 selected" or "select all 1,234" in a bulk actions bar. It returns `null` outside a table. `selected` holds only rows on the table: a row that leaves it (the next page) leaves the selection.
 
 ```tsx
 import { BulkActions, Table, useTableSelection } from "@javaabu/forms"

@@ -166,12 +166,17 @@ export function Table({
         }),
       register: (id: string) => {
         setAll((prev) => new Set(prev).add(id))
-        return () =>
-          setAll((prev) => {
-            const next = new Set(prev)
-            next.delete(id)
-            return next
-          })
+        // A row that leaves (the next page) leaves the selection too.
+        const without = (prev: Set<string>) => {
+          if (!prev.has(id)) return prev
+          const next = new Set(prev)
+          next.delete(id)
+          return next
+        }
+        return () => {
+          setAll(without)
+          setSelected(without)
+        }
       },
     }),
     [],

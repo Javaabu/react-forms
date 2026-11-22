@@ -154,6 +154,30 @@ describe("Table", () => {
   })
 })
 
+describe("Table selection", () => {
+  it("drops the ids of rows that leave the table", () => {
+    let seen: ReadonlySet<string> | undefined
+    function Count() {
+      seen = useTableSelection()?.selected
+      return null
+    }
+    const page = (ids: number[]) => (
+      <Table model="users" bulkForm={<Count />}>
+        {ids.map((id) => (
+          <TableRow key={id} model={{ id, name: "ޢަލީ" }}>
+            <TableCell name="name" />
+          </TableRow>
+        ))}
+      </Table>
+    )
+    const { container, rerender } = render(page([1, 2]))
+    fireEvent.click(container.querySelector('tbody input[type="checkbox"]')!)
+    expect([...seen!]).toEqual(["1"])
+    rerender(page([3, 4]))
+    expect(seen!.size).toBe(0)
+  })
+})
+
 describe("filters", () => {
   it("renders the filter, export and clear buttons", () => {
     render(
