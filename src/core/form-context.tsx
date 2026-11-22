@@ -65,7 +65,8 @@ export function useFormValues(): FormValuesStore | null {
 export function setIn<T>(target: T, path: string, value: unknown): T {
   const [head, ...rest] = path.split(".")
   if (head === undefined) return target
-  const source = (target ?? {}) as Record<string, unknown> | unknown[]
+  // A missing container is an array when the key is an index (`items.0.name`).
+  const source = (target ?? (/^\d+$/.test(head) ? [] : {})) as Record<string, unknown> | unknown[]
   const copy: Record<string, unknown> | unknown[] = Array.isArray(source) ? [...source] : { ...source }
   const next = rest.length ? setIn((source as Record<string, unknown>)[head], rest.join("."), value) : value
   if (Array.isArray(copy) && /^\d+$/.test(head)) copy[Number(head)] = next

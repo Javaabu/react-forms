@@ -56,7 +56,7 @@ Every other visit option goes through `visitOptions`: `<Form visitOptions={{ onl
 
 # `useForm()`
 
-Pass the result of `useForm()` to `form`. The fields read and write `form.data`; nested names (`address[city]`) map to nested data. The form shows `form.errors`, `form.processing` and `form.progress`, and submits with `form.submit()`:
+Pass the result of `useForm()` to `form`. The fields read and write `form.data`; nested names (`address[city]`) map to nested data, and numeric segments to arrays (`items[0][name]` → `{ items: [{ name }] }`). The form shows `form.errors`, `form.processing` and `form.progress`, and submits with `form.submit()`:
 
 ```tsx
 import { useForm } from "@inertiajs/react"
