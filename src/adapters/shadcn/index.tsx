@@ -551,11 +551,16 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
       const [open, setOpen] = React.useState(false)
       const [query, setQuery] = React.useState("")
       const found = useRemoteOptions(remote, query)
+      // Remote options leave the list when the search changes; remember the picked ones for their labels.
+      const [picked, setPicked] = React.useState<SelectOption[]>([])
       const all: SelectOption[] = [...options]
       for (const o of found.options) if (!all.some((x) => x.value === o.value)) all.push(o)
+      for (const o of picked) if (value.includes(o.value) && !all.some((x) => x.value === o.value)) all.push(o)
       for (const v of value) if (!all.some((x) => x.value === v)) all.push({ value: v, label: v })
       const labels = value.map((v) => all.find((o) => o.value === v)?.label ?? v)
       const toggle = (v: string) => {
+        const option = remote ? found.options.find((o) => o.value === v) : undefined
+        if (option) setPicked((current) => [...current.filter((o) => o.value !== v), option])
         if (multiple) onValueChange(value.includes(v) ? value.filter((x) => x !== v) : [...value, v])
         else {
           onValueChange(value[0] === v && props.clearable ? [] : [v])

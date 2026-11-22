@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { act, fireEvent, render, screen } from "@testing-library/react"
 
 import * as ui from "../../../test/shadcn"
 import { Form } from "../../components/form"
@@ -94,5 +94,32 @@ describe("the shadcn adapter", () => {
     fireEvent.click(screen.getByRole("button", { name: "ދެވަނަ" }))
     expect(second.closest("[hidden]")).toBeNull()
     expect(first.closest("[hidden]")).not.toBeNull()
+  })
+
+  it("keeps the label of a remote option after the search is cleared", async () => {
+    vi.stubGlobal(
+      "fetch",
+      // The first page for an empty search doesn't hold the picked option.
+      vi.fn(async (url: string) =>
+        Response.json({
+          data: url.includes("filter%5Bsearch%5D=ma") ? [{ id: 7, name: "މާލެ" }] : [{ id: 1, name: "އައްޑޫ" }],
+        }),
+      ),
+    )
+    const { container } = render(
+      <FormsProvider ui={shadcn}>
+        <Form>
+          <Select2 name="city" isAjax ajaxUrl="/api/cities" />
+        </Form>
+      </FormsProvider>,
+    )
+    fireEvent.click(screen.getByRole("combobox"))
+    fireEvent.change(screen.getByPlaceholderText("Search"), { target: { value: "ma" } })
+    fireEvent.click(await screen.findByText("މާލެ", {}, { timeout: 2000 }))
+    expect(new FormData(container.querySelector("form")!).get("city")).toBe("7")
+    await act(async () => void (await new Promise((r) => setTimeout(r, 400))))
+    expect(fetch).toHaveBeenLastCalledWith(expect.not.stringContaining("=ma"), expect.anything())
+    expect(screen.getByRole("combobox")).toHaveTextContent("މާލެ")
+    vi.unstubAllGlobals()
   })
 })
