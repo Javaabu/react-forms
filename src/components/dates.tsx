@@ -4,9 +4,16 @@ import * as React from "react"
 
 import type { DateMode } from "../core/adapter"
 import { useFieldValue } from "../core/binding"
-import { useUi } from "../core/provider"
+import { useSetting, useUi } from "../core/provider"
 import { usePublishField } from "../core/registry"
-import { parseDateValue, toDateString, toDateTimeString, toTimeString } from "../support/dates"
+import {
+  hasTimeZone,
+  parseDateValue,
+  toDateString,
+  toDateTimeString,
+  toTimeString,
+  toZonedWallTime,
+} from "../support/dates"
 import { splitFieldProps, useField, useFieldState, type FieldProps, type PlaceholderProps } from "./field"
 
 export interface DateProps extends FieldProps, PlaceholderProps {
@@ -30,8 +37,21 @@ const FORMATTERS: Record<DateMode, (d: Date) => string> = {
   time: toTimeString,
 }
 
-/** Formats any date value the way the field submits it, or `""`. */
-export function formatDateValue(value: unknown, mode: DateMode): string {
+/**
+ * Formats any date value the way the field submits it, or `""`.
+ *
+ * A string with a time zone (`2024-05-01T04:30:00.000000Z`, Laravel's JSON for date casts) is an
+ * instant. With `timeZone` (the app's, the `app_timezone` setting) it shows that zone's wall time.
+ * Without it, `date` mode keeps the date as written and the other modes use the browser's zone.
+ * Strings without a zone and `Date` objects are local time.
+ */
+export function formatDateValue(value: unknown, mode: DateMode, timeZone?: string): string {
+  if (hasTimeZone(value)) {
+    const instant = parseDateValue(value)
+    const wall = instant && timeZone ? toZonedWallTime(instant, timeZone) : null
+    if (wall) return FORMATTERS[mode](wall)
+    if (mode === "date") return value.trim().slice(0, 10)
+  }
   const date = parseDateValue(value)
   return date ? FORMATTERS[mode](date) : ""
 }
@@ -41,10 +61,11 @@ function DateField({ mode, ...props }: DateProps & { mode: DateMode }) {
   const { field, rest } = splitFieldProps(props)
   const { value, onChange, placeholder, showPlaceholder, min, max, className } = rest
   const f = useField({ ...field, placeholder, showPlaceholder })
+  const timeZone = useSetting<string>("app_timezone") || undefined
   const raw = useFieldValue(field.name, field.model, field.default)
-  const initial = React.useMemo(() => formatDateValue(raw, mode), [raw, mode])
+  const initial = React.useMemo(() => formatDateValue(raw, mode, timeZone), [raw, mode, timeZone])
   const [current, setCurrent] = useFieldState(field.name, initial, {
-    controlled: value === undefined ? undefined : formatDateValue(value, mode),
+    controlled: value === undefined ? undefined : formatDateValue(value, mode, timeZone),
   })
 
   usePublishField({
@@ -62,8 +83,8 @@ function DateField({ mode, ...props }: DateProps & { mode: DateMode }) {
       className={className}
       mode={mode}
       placeholder={f.placeholder}
-      min={min === undefined ? undefined : formatDateValue(min, mode)}
-      max={max === undefined ? undefined : formatDateValue(max, mode)}
+      min={min === undefined ? undefined : formatDateValue(min, mode, timeZone)}
+      max={max === undefined ? undefined : formatDateValue(max, mode, timeZone)}
       value={current}
       onValueChange={(next) => {
         setCurrent(next)

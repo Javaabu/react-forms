@@ -60,7 +60,7 @@ Attributes become camelCase props (`show-label` → `showLabel`, `:options="$x"`
 - **List options** (`['a', 'b']`) keep PHP's meaning: the values are `0` and `1`, as when Laravel sends a PHP list as JSON. Use `{ a: "A" }`, pairs or `{ value, label }` objects for other values. JS objects sort integer keys, so pass ordered pairs (`[[10, "10"], [5, "5"]]`) when the order matters.
 - **Radios** are selected when the bound value equals their `value`. Blade v1 checked every radio of a group for a truthy scalar, so the last one won.
 - **Grouped checkboxes** (`name="channels[]"`) get unique ids (`channels-email`) without an explicit `id`.
-- **Dates** are submitted as `yyyy-MM-dd`, `yyyy-MM-dd HH:mm:ss` and `HH:mm`. The picker comes from the adapter, so `dateFormat`, `icon`, `clearIcon` and `clearBtnClass` don't apply.
+- **Dates** are submitted as `yyyy-MM-dd`, `yyyy-MM-dd HH:mm:ss` and `HH:mm`. The picker comes from the adapter, so `dateFormat`, `icon`, `clearIcon` and `clearBtnClass` don't apply. Blade formats bound dates on the server in the app's time zone; the browser doesn't know it, so set the `app_timezone` setting (`config('app.timezone')`) for zone-aware values such as Laravel's JSON for date casts. See [Dates](./basic-usage/dates#values).
 - **Passwords** never take a `default`: they are never pre-filled.
 - **`Tabs` with `url`** navigate with `window.location`. For router links use `NavTabs` with the `inertiaLinks` adapter.
 - **Text entries** render enums serialized as `{ value, label }` (with `color`, a status badge), booleans as Yes / No, arrays as lists. HTML in `admin_link` is not rendered; pass children instead.

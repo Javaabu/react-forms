@@ -33,6 +33,37 @@ export function parseDateValue(value: unknown, reference: Date = new Date()): Da
   return new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), Number(m[4] ?? 0), Number(m[5] ?? 0), Number(m[6] ?? 0))
 }
 
+const ZONED = /^\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}(?::\d{2}(?:\.\d+)?)?(?:Z|[+-]\d{2}:?\d{2})$/
+
+/** A date string that names its time zone (`…Z`, `…+05:00`), e.g. Laravel's JSON for date casts. */
+export function hasTimeZone(value: unknown): value is string {
+  return typeof value === "string" && ZONED.test(value.trim())
+}
+
+/**
+ * The wall time of `date` in `timeZone`, as a local `Date` (so the local formatters print it).
+ * Returns `null` for a time zone `Intl` doesn't know.
+ */
+export function toZonedWallTime(date: Date, timeZone: string): Date | null {
+  let parts: Intl.DateTimeFormatPart[]
+  try {
+    parts = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    }).formatToParts(date)
+  } catch {
+    return null
+  }
+  const part = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0)
+  return new Date(part("year"), part("month") - 1, part("day"), part("hour"), part("minute"), part("second"))
+}
+
 /** `yyyy-MM-dd` in local time. */
 export function toDateString(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`

@@ -263,8 +263,8 @@ export function adapterConformance(
             <Time name="starts_at" />
           </Form>,
         )
-        const date = String(formData(container).get("published_on"))
-        check(/^\d{4}-\d{2}-\d{2}$/.test(date), `published_on must be yyyy-MM-dd, got ${date}`)
+        // The calendar date as written, in any browser time zone.
+        equal(formData(container).get("published_on"), "2026-11-04", "date")
         equal(formData(container).get("starts_at"), "09:30", "time")
       },
     },

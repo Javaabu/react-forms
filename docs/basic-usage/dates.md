@@ -28,7 +28,18 @@ export function EventForm({ event }) {
 
 # Values
 
-Bound values can be what Laravel sends: `2026-11-04`, `2026-11-04 09:30:00`, ISO strings (`2026-11-04T09:30:00.000000Z`), times (`09:30`), timestamps or `Date` objects. Strings without a time zone are read as local time.
+Bound values can be what Laravel sends: `2026-11-04`, `2026-11-04 09:30:00`, ISO strings (`2026-11-04T09:30:00.000000Z`), times (`09:30`), timestamps or `Date` objects. Strings without a time zone and `Date` objects are read as local time.
+
+A string with a time zone is an instant: Laravel's JSON for `date` and `datetime` casts is the UTC instant (`2026-11-04T04:30:00.000000Z`). The browser doesn't know the app's time zone, so tell it with the `app_timezone` setting:
+
+```tsx
+<FormsProvider settings={{ app_timezone: "Indian/Maldives" }}>
+```
+
+Share `config('app.timezone')` from Laravel to set it. With it, every field shows and submits the app's wall time (`2026-11-04 09:30:00` above). Without it:
+
+- `Date` keeps the date as written in the string (`2026-11-04`), so a browser in another zone doesn't move it a day. In an app east of UTC, Laravel writes a date cast as the instant of its midnight (`2026-11-03T19:00:00.000000Z` for 4 November in the Maldives), so set `app_timezone` there.
+- `Datetime` and `Time` show the instant in the browser's time zone. When it differs from the app's, the value moves by the difference on every save; set `app_timezone`, or send the attributes as `Y-m-d H:i:s` strings (a `serializeDate()` override or a `datetime:Y-m-d H:i:s` cast).
 
 The fields submit:
 

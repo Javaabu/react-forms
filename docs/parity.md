@@ -103,7 +103,7 @@ Only what differs; everything else in a component's props is in both.
 | Accessibility | Invalid controls get `aria-invalid="true"` and `aria-describedby` pointing at the help text and errors; the first invalid field is focused when errors arrive (`focusOnError`). |
 | Error summary | `Form summary` (default `false` in both, agreed in #18) lists every error at the top. React always shows a general message (a failed client-side submit) at the top. |
 | Method spoofing and CSRF | `PUT`/`PATCH`/`DELETE` are sent as `POST` with `_method`; non-GET forms get `_token`. |
-| Dates | Accept Laravel's formats; submit `yyyy-MM-dd`, `yyyy-MM-dd HH:mm:ss`, `HH:mm`. |
+| Dates | Accept Laravel's formats; submit `yyyy-MM-dd`, `yyyy-MM-dd HH:mm:ss`, `HH:mm`. ≠ Blade formats dates on the server, in the app's time zone. React reads zone-aware strings (Laravel's JSON for date casts) in the `app_timezone` setting's zone; without it, `Date` keeps the date as written and `Datetime` / `Time` use the browser's zone. |
 | Formatted values | Enums (`{ value, label }`) show their label (a status badge with `color`), booleans Yes / No, empty values `-`, arrays a list (text entries) or joined with `table_array_separator` (table cells). |
 | Button colours | Bootstrap names (`primary`, `danger`, `outline-secondary`, …) in both; each React adapter maps them to its variants. |
 
