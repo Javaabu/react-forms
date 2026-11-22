@@ -175,10 +175,23 @@ function OnuFieldErrors(props: FieldErrorsSlotProps) {
   return <FieldErrors {...props} />
 }
 
-function OnuErrorSummary({ title, description, items, className }: ErrorSummarySlotProps) {
+function OnuErrorSummary({ title, description, items, onSelect, className }: ErrorSummarySlotProps) {
   const errors = Object.fromEntries(items.map((item) => [item.name, item.messages]))
   const labels = Object.fromEntries(items.filter((i) => i.label).map((item) => [item.name, item.label]))
-  return <ValidationSummary errors={errors} title={title} message={description} labels={labels} className={className} />
+  // Onu's summary has no hook for its links, which focus the field themselves. Run the core's
+  // `onSelect` first (it finds nested names and opens hidden tabs), and keep Onu's out when it worked.
+  const select = (event: React.MouseEvent) => {
+    const link = (event.target as Element).closest?.("a[data-field]")
+    const name = link?.getAttribute("data-field")
+    if (!name || !onSelect(name)) return
+    event.preventDefault()
+    event.stopPropagation()
+  }
+  return (
+    <div className="contents" onClickCapture={select}>
+      <ValidationSummary errors={errors} title={title} message={description} labels={labels} className={className} />
+    </div>
+  )
 }
 
 /* -------------------------------------------------------------------------- */
