@@ -122,4 +122,22 @@ describe("the shadcn adapter", () => {
     expect(screen.getByRole("combobox")).toHaveTextContent("މާލެ")
     vi.unstubAllGlobals()
   })
+
+  it("clears a clearable simple select", () => {
+    const { container } = render(
+      <FormsProvider ui={shadcn}>
+        <Form model={{ status: "draft" }}>
+          <Select name="status" placeholder="ހޮވާ" options={{ draft: "ޑްރާފްޓް", published: "ޝާއިޢު" }} />
+          <Select name="kind" required placeholder="ހޮވާ" options={{ a: "A" }} default="a" />
+        </Form>
+      </FormsProvider>,
+    )
+    const data = () => new FormData(container.querySelector("form")!)
+    expect(data().get("status")).toBe("draft")
+    // Only the optional select is clearable.
+    expect(screen.getAllByRole("button", { name: "Clear" })).toHaveLength(1)
+    fireEvent.click(screen.getByRole("button", { name: "Clear" }))
+    expect(data().get("status")).toBe("")
+    expect(screen.queryByRole("button", { name: "Clear" })).toBeNull()
+  })
 })

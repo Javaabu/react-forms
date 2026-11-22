@@ -207,6 +207,16 @@ function RevealArea({ onReveal, children }: { onReveal: () => void; children: Re
   )
 }
 
+function ClearButton({ onClear }: { onClear: () => void }) {
+  const ui = useUi()
+  const { t } = useFormsTranslation()
+  return (
+    <ui.Button type="button" color="light" size="icon" aria-label={t("clear")} onClick={onClear}>
+      <ui.Icon name="close" />
+    </ui.Button>
+  )
+}
+
 /** Hidden inputs for a value list, for selects whose widget isn't a native control. */
 function HiddenValues({
   name,
@@ -656,7 +666,7 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
         "Select" | "SelectTrigger" | "SelectValue" | "SelectContent" | "SelectItem"
       >
       const { options, value, onValueChange, placeholder, name, id, disabled, required, className } = props
-      return (
+      const select = (
         <Select
           name={name}
           value={value[0] ?? ""}
@@ -683,6 +693,14 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
               ))}
           </SelectContent>
         </Select>
+      )
+      if (!props.clearable) return select
+      // Radix's Select has no way to clear it, so a button beside the trigger does.
+      return (
+        <div className="flex items-center gap-1">
+          <div className="min-w-0 flex-1">{select}</div>
+          {value.length && !disabled ? <ClearButton onClear={() => onValueChange([])} /> : null}
+        </div>
       )
     }
   }
