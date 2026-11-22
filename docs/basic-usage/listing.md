@@ -74,6 +74,8 @@ export default function Index({ users, query }) {
 - **Empty state.** `NoItems` shows "It's a bit lonely here." and a Create New button. The button shows when `showCreate` is true, or when `FormsProvider authorize("create", model)` allows it.
 - **Pagination.** Pass a Laravel paginator, an API resource collection or a cursor paginator, as JSON. Pages are links that keep the rest of the query string. Pass `getPageHref` to build the links yourself, or `onPageChange` for buttons.
 
+"The URL" above is the page's URL from the router (Inertia's `usePage().url`) or `FormsProvider url`, so these components render the same on the server (Inertia SSR) and in the browser. Without either, they read the browser's URL once the page has hydrated. `usePageUrl()` and `usePageQuery()` give the same URL to your own components.
+
 # Reading the selection
 
 Content inside a `Table` (its `bulkForm`, `beforeTable`, rows, …) reads the row selection with `useTableSelection()`, for "3 selected" or "select all 1,234" in a bulk actions bar. It returns `null` outside a table. `selected` holds only rows on the table: a row that leaves it (the next page) leaves the selection.

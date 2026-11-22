@@ -112,4 +112,4 @@ Or handle it yourself with `onSubmit`. See [Validation errors](../basic-usage/er
 
 # Writing a router
 
-A router is `{ name, submit(request, callbacks), usePageErrors?, useOldInput? }` (`FormsRouter`). `submit` gets the URL, the real method, the `FormData`, the form element, the error bag and the visit options, and calls `onStart`, `onProgress`, `onSuccess`, `onError(errors)`, `onFailure(error)` and `onFinish`. The two optional hooks return the current page's errors (every bag) and old input.
+A router is `{ name, submit(request, callbacks), usePageErrors?, useOldInput?, useUrl? }` (`FormsRouter`). `submit` gets the URL, the real method, the `FormData`, the form element, the error bag and the visit options, and calls `onStart`, `onProgress`, `onSuccess`, `onError(errors)`, `onFailure(error)` and `onFinish`. The optional hooks return the current page's errors (every bag), old input and URL. `useUrl` must give the same URL on the server and the client (the Inertia router returns `usePage().url`): listing components read the query from it, so server-rendered pages hydrate without a mismatch.

@@ -120,6 +120,7 @@ Blade forms submit natively, so these have no Blade counterpart.
 | `Number` `decimals` | The value is rounded as it is typed, for `onValueChange` and `useForm()` data, and the input shows (and submits) the rounded value once it loses focus. Blade leaves rounding to js-utilities. |
 | `Submit` spinner | Stops when the page is shown again from the back-forward cache (`pageshow`) and when a handler prevented the submit, so the button doesn't stay busy. |
 | `MapInput` updates | Follows a model that loads later and changed `lat` / `lng` / `radius` / `polygon` props, and returns to its starting values on a form reset. |
+| Listing URL | Sortable headings, `Filter`, `PerPage`, `SearchForm`, `BulkActions` (`redirect`) and `Pagination` read the query from the router (Inertia's `usePage().url`) or `FormsProvider url`, so server rendering (Inertia SSR) matches the first client render. Without either, they read the browser's URL after hydration. |
 | `useForm()` transform | `Form` calls `form.transform()` only to add `_method` to a multipart `PUT` / `PATCH` / `DELETE` (`files`), so the page's own transform stays on every other form. |
 
 # Strings

@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { getBoundValue, Model, useBindTarget, useBoundModel, type ModelProp } from "../core/binding"
+import { usePageQuery, usePageUrl } from "../core/page-url"
 import { useSetting, useUi } from "../core/provider"
 import { useFormsTranslation } from "../core/strings"
 import { isNil, toFormString } from "../support/data"
@@ -34,9 +35,9 @@ export interface LaravelResourceCollection {
   meta: LaravelPaginationMeta
 }
 
-/** The current URL's query string (empty on the server). */
+/** The browser's query string now, for event handlers. Rendering reads `usePageQuery()`. */
 function currentQuery(): URLSearchParams {
-  return new URLSearchParams(typeof window === "undefined" ? "" : window.location.search)
+  return new URLSearchParams(window.location.search)
 }
 
 /** Submits `form` with an extra field, like a clicked `<button name value>`. */
@@ -353,7 +354,7 @@ export function TableHeading({ label, colSpan, sortable, name, children, classNa
   const { t } = useFormsTranslation()
   const table = React.useContext(TableContext)
   const field = sortable || name
-  const query = currentQuery()
+  const query = usePageQuery()
   const active = !!field && query.get("orderby") === field
   const order = (query.get("order") || "ASC").toUpperCase()
   const content = children ?? label
@@ -451,6 +452,7 @@ export interface BulkActionsProps {
 /** `<x-forms::bulk-actions>`: an `action` select, an Apply button and the `redirect` back to this page. */
 export function BulkActions({ actions, className }: BulkActionsProps) {
   const { t } = useFormsTranslation()
+  const url = usePageUrl()
   if (!Object.keys(actions).length) return null
   return (
     <div className={cn("gap-2 flex flex-wrap items-end", className)}>
@@ -469,14 +471,14 @@ export function BulkActions({ actions, className }: BulkActionsProps) {
       <Button type="submit" color="warning">
         {t("apply")}
       </Button>
-      <Hidden name="redirect" value={typeof window === "undefined" ? "" : window.location.href} model={false} />
+      <Hidden name="redirect" value={url} model={false} />
     </div>
   )
 }
 
 /** `<x-forms::filter>`: the filter card, with the `orderby` / `order` fields sortable headings set. */
 export function Filter({ children, className }: { children?: React.ReactNode; className?: string }) {
-  const query = currentQuery()
+  const query = usePageQuery()
   return (
     <div data-slot="forms-filter" className={cn("p-4 rounded-lg border bg-card text-card-foreground", className)}>
       {children}
@@ -585,7 +587,8 @@ export interface PerPageProps {
 export function PerPage({ amounts = [10, 20, 50, 100, 500], perPage, label, showLabel, className }: PerPageProps) {
   const { t } = useFormsTranslation()
   const setting = useSetting<number>("per_page")
-  const selected = toFormString(perPage ?? currentQuery().get("per_page") ?? setting ?? "")
+  const query = usePageQuery()
+  const selected = toFormString(perPage ?? query.get("per_page") ?? setting ?? "")
   const options: Array<[string, string]> = Array.isArray(amounts)
     ? amounts.map((a) => [String(a), String(a)])
     : Object.entries(amounts).map(([k, v]) => [k, String(v)])
@@ -624,7 +627,8 @@ export function SearchForm({
   ...props
 }: SearchFormProps) {
   const { t } = useFormsTranslation()
-  const values = model ?? Object.fromEntries(currentQuery())
+  const query = usePageQuery()
+  const values = model ?? Object.fromEntries(query)
   return (
     <Form {...props} method={method} model={values} summary={false} className={cn("search", className)}>
       <Input name={name} type="search" placeholder={placeholder ?? t("search_form_placeholder")} showLabel={false} />
@@ -718,6 +722,7 @@ export interface PaginationProps {
 export function Pagination({ paginator, getPageHref, onPageChange, className }: PaginationProps) {
   const ui = useUi()
   const { t } = useFormsTranslation()
+  const query = usePageQuery()
   const p = paginator as CursorPaginator & Partial<LaravelPaginationMeta> & { meta?: LaravelPaginationMeta }
   const isCursor = !p.meta && p.current_page === undefined && ("next_cursor" in p || "next_page_url" in p)
 
@@ -750,7 +755,7 @@ export function Pagination({ paginator, getPageHref, onPageChange, className }: 
     (onPageChange
       ? undefined
       : (page: number) => {
-          const params = currentQuery()
+          const params = new URLSearchParams(query)
           params.set("page", String(page))
           return `?${params.toString()}`
         })

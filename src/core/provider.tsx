@@ -44,6 +44,11 @@ export interface FormsConfig {
   authorize?: Authorize
   /** Values for `get_setting()` lookups. */
   settings?: FormsSettings
+  /**
+   * The current page's URL, for listing components (sort, filters, pagination) when they render on
+   * the server. Default: the router's (Inertia's `usePage().url`), else the browser's after hydration.
+   */
+  url?: string
 }
 
 export interface FormsContextValue {
@@ -57,6 +62,7 @@ export interface FormsContextValue {
   errors: PageErrors | null
   authorize?: Authorize
   settings: FormsSettings
+  url?: string
 }
 
 /** The `get_setting()` defaults javaabu projects ship with. */
@@ -99,6 +105,7 @@ function resolve(parent: FormsContextValue | null, config: FormsConfig): FormsCo
     errors: config.errors !== undefined ? config.errors : base.errors,
     authorize: config.authorize ?? base.authorize,
     settings: { ...base.settings, ...config.settings },
+    url: config.url ?? base.url,
   }
 }
 
@@ -130,6 +137,7 @@ export function FormsProvider({ children, ...config }: FormsProviderProps) {
       config.errors,
       config.authorize,
       config.settings,
+      config.url,
     ],
   )
   return <FormsContext.Provider value={value}>{children}</FormsContext.Provider>

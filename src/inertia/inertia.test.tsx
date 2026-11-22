@@ -10,6 +10,7 @@ import { mergeAdapters } from "../core/adapter"
 import { FormsProvider } from "../core/provider"
 import { html } from "../adapters/html"
 import { LinkButton } from "../components/buttons"
+import { Table, TableHeading } from "../components/listing"
 import { inertia, inertiaLinks } from "."
 
 type Callbacks = {
@@ -22,7 +23,10 @@ type Callbacks = {
   [key: string]: unknown
 }
 
-const page = { props: { errors: {} as Record<string, unknown>, old: undefined as Record<string, unknown> | undefined } }
+const page = {
+  url: "/",
+  props: { errors: {} as Record<string, unknown>, old: undefined as Record<string, unknown> | undefined },
+}
 const visit = vi.fn<(url: string, options: Callbacks & { method: string; data?: FormData }) => void>()
 
 vi.mock("@inertiajs/react", () => ({
@@ -38,6 +42,7 @@ vi.mock("@inertiajs/react", () => ({
 beforeEach(() => {
   visit.mockReset()
   page.props = { errors: {}, old: undefined }
+  page.url = "/"
 })
 
 function withInertia(ui: React.ReactElement) {
@@ -250,6 +255,18 @@ describe("Inertia's useForm()", () => {
     expect(options.forceFormData).toBe(true)
     fireEvent.change(screen.getByLabelText("Email"), { target: { value: "a@b.mv" } })
     await waitFor(() => expect(screen.queryByText("Taken.")).not.toBeInTheDocument())
+  })
+})
+
+describe("the page URL", () => {
+  it("comes from usePage().url, so listings render the same on the server", () => {
+    page.url = "/users?orderby=name&order=DESC"
+    withInertia(
+      <Table model="users" headers={<TableHeading label="ނަން" sortable="name" />}>
+        {null}
+      </Table>,
+    )
+    expect(document.querySelector("[data-sort-field=name]")).toHaveAttribute("aria-sort", "descending")
   })
 })
 

@@ -51,6 +51,7 @@ export const inertia: FormsRouter = {
   },
   usePageErrors: () => (usePage().props as { errors?: unknown }).errors,
   useOldInput: () => (usePage().props as { old?: Record<string, unknown> | null }).old ?? undefined,
+  useUrl: () => usePage().url,
 }
 
 function Link({ href, ...props }: LinkSlotProps) {

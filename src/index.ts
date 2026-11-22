@@ -62,6 +62,7 @@ export {
   type FormValues,
 } from "./core/router"
 export { useWatchField, usePublishField, type WatchedField, type FieldEntry, type FieldKind } from "./core/registry"
+export { usePageUrl, usePageQuery } from "./core/page-url"
 
 // Form scaffolding
 export {

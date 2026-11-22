@@ -113,6 +113,8 @@ export interface FormsRouter {
   usePageErrors?: () => unknown
   /** A hook: the current page's old input. */
   useOldInput?: () => Record<string, unknown> | null | undefined
+  /** A hook: the current page's URL, the same on the server and the client (Inertia's `usePage().url`). */
+  useUrl?: () => string
 }
 
 /** `FormData` as an object; repeated names (checkbox groups, `tags[]`) become arrays. */

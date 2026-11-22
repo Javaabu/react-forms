@@ -51,6 +51,7 @@ Every module is marked `"use client"`. Builds: ESM (`.js`), CommonJS (`.cjs`) an
 | `usePublishField(entry)` | Publishes a field's value so `ConditionalWrapper` and `useWatchField` see it. For custom fields |
 | `useTableSelection()` | The surrounding `Table`'s `model`, `selected` and `rows` ids and `setSelected()`, or `null`. For content in `bulkForm` |
 | `useSetting(key)`, `useCsrfToken()` | `get_setting()`, the CSRF token |
+| `usePageUrl()`, `usePageQuery()` | The current page's URL and its query, the same on the server and the client: the router's `useUrl()`, `FormsProvider url`, or the browser's URL after hydration. For listing parts of your own |
 | `useRemoteOptions(remote, query)` | Server-searched select options, for adapters |
 | `useReveal(ref, onReveal)` | Calls `onReveal` when an invalid field inside `ref` needs to be shown, for adapters' tabs and accordions |
 

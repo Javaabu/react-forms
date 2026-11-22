@@ -126,6 +126,7 @@ Write an adapter for your UI kit, or replace a few components of the HTML adapte
 | `errors` | `PageErrors \| null` | | Validation errors for every form, flat or by error bag |
 | `authorize` | `(ability, argument?, guard?) => boolean` | fail closed | Resolves the `can` props of `ConditionalLink` and `NoItems` |
 | `settings` | `Record<string, unknown>` | `per_page: 20`, `max_upload_file_size: 10240`, `max_image_file_size: 2048` | `get_setting()` values: upload limits (KB), `per_page`, `default_lat`, `default_lng`, `app_timezone` (the app's time zone for date fields, e.g. `config('app.timezone')`) |
+| `url` | `string` | the router's, else the browser's | The current page's URL, read by sortable headings, `Filter`, `PerPage`, `SearchForm`, `BulkActions` and `Pagination`. Set it when they render on the server without the Inertia router (which reads `usePage().url`) |
 
 # Laravel apps
 
