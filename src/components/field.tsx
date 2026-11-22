@@ -212,11 +212,17 @@ export interface FieldStateOptions<T> {
   store?: boolean
 }
 
-/** The surrounding form's reset version as it applies to the field `name`. */
+/**
+ * The surrounding form's reset version as it applies to the field `name`: it follows
+ * resets that include the field and stays put on those that don't.
+ */
 export function useResetVersion(name: string): number {
   const form = useFormState()
+  const version = form?.resetVersion ?? 0
   const resets = !form || !form.resetNames || form.resetNames.includes(name)
-  return resets ? (form?.resetVersion ?? 0) : 0
+  const [applied, setApplied] = React.useState(version)
+  if (resets && applied !== version) setApplied(version)
+  return resets ? version : applied
 }
 
 /**

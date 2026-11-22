@@ -1,3 +1,4 @@
+import * as React from "react"
 import { act, fireEvent, render, screen } from "@testing-library/react"
 
 import { fakeUseForm } from "../../test/helpers"
@@ -42,5 +43,33 @@ describe("Form with useForm()", () => {
     expect(calls.transform.length).toBe(1)
     const transform = calls.transform[0] as (d: Record<string, unknown>) => Record<string, unknown>
     expect(transform({ name: "ޢަލީ" })).toEqual({ name: "ޢަލީ", _method: "put" })
+  })
+})
+
+describe("resetOnSuccess", () => {
+  it("leaves fields it doesn't list alone after it changes from true to a list", async () => {
+    function Page() {
+      const [names, setNames] = React.useState<boolean | string[]>(true)
+      return (
+        <Form action="/x" resetOnSuccess={names} onSubmit={async () => {}} onSuccess={() => setNames(["a"])}>
+          <Text name="a" default="" />
+          <Text name="b" default="" />
+          <button type="submit">go</button>
+        </Form>
+      )
+    }
+    render(<Page />)
+    const submit = async () => {
+      fireEvent.click(screen.getByText("go"))
+      await act(async () => {})
+    }
+    fireEvent.change(screen.getByLabelText("B"), { target: { value: "ފުރަތަމަ" } })
+    await submit()
+    expect(screen.getByLabelText("B")).toHaveValue("")
+    fireEvent.change(screen.getByLabelText("A"), { target: { value: "a" } })
+    fireEvent.change(screen.getByLabelText("B"), { target: { value: "ދެވަނަ" } })
+    await submit()
+    expect(screen.getByLabelText("A")).toHaveValue("")
+    expect(screen.getByLabelText("B")).toHaveValue("ދެވަނަ")
   })
 })
