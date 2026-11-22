@@ -114,6 +114,7 @@ Blade forms submit natively, so these have no Blade counterpart.
 | Behaviour | React |
 | --- | --- |
 | `useForm()` data | Every field writes to `form.data`, since `useForm` submits nothing else: value fields as they change, `File` the picked `File` (`File[]` with `multiple`, `null` when cleared), `Image` the picked image, `Hidden` its value (so a multi-select's `sync_<name>` too), and `MapInput` its latitude, longitude, radius and boundary. Controlled fields write their `value`. `FileUpload` / `ImageUpload` post on their own and stay out of the data. |
+| `useForm()` precedence | Data already in `form.data` wins over old input, the model and `default`, for value fields, checkboxes and radios alike. |
 | `useForm()` transform | `Form` calls `form.transform()` only to add `_method` to a multipart `PUT` / `PATCH` / `DELETE` (`files`), so the page's own transform stays on every other form. |
 
 # Strings

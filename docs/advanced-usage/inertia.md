@@ -80,6 +80,7 @@ export default function Create() {
 ```
 
 - A field that isn't in `form.data` yet starts from the model, old input or `default`, and is added to the data.
+- A field that is in `form.data` shows that value: the model and `default` don't replace it. This holds for checkboxes and radios too, so `<Radio default>` doesn't override `useForm({ plan: "pro" })`.
 - Checkbox groups (`channels[]`) hold an array of the checked values, a single checkbox its value or `false`, and radios the selected value.
 - `File` holds the picked `File` (`File[]` with `multiple`, `null` when cleared) and `Image` the picked image; `useForm` uploads them with `files`. `FileUpload` and `ImageUpload` post on their own, so they stay out of the data. A reset clears the picked file.
 - `Hidden` fields put their value in the data and keep it up to date, so a multi-select's `sync_<name>` field and `MapInput`'s hidden coordinates and boundary are submitted. A controlled field (`value`) writes its value too.

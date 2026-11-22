@@ -67,11 +67,20 @@ function useChoiceStore(name: string, value: string, kind: "checkbox" | "radio",
   const group = kind === "checkbox" && name.endsWith("[]")
   const key = group ? before(name, "[]") : name
 
+  // Data the store held before any box of the group seeded it wins over `default` and the model, as
+  // with value fields. Read on the first render, before the boxes' seeding effects run.
+  const [held] = React.useState(() => {
+    if (!store) return false
+    const current = store.get(key)
+    return group ? current !== undefined && current !== null : current !== undefined
+  })
+
   // Seed the store once. Functional updates, so boxes of one group don't overwrite each other.
   const seeded = React.useRef(false)
   React.useEffect(() => {
     if (!store || seeded.current) return
     seeded.current = true
+    if (held) return
     store.update(key, (current) => {
       if (group) {
         if (current === undefined || current === null) return initial ? [value] : []
