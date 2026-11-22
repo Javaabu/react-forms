@@ -100,7 +100,7 @@ import { Accordion, AccordionItem } from "@javaabu/forms"
 
 `items` is an object keyed by panel name, or a list. `slots` are Blade's named slots: `applicationStatus` (or `application-status`) for a panel's body, `applicationStatusHeader` for its header, and `item-0` for list items. Panel ids follow Blade: the key for named items, `<id>-item-<n>-collapse` for list items. `show` opens a panel; with several open, more than one can be open at a time. `AccordionItem` takes `name`, `title`, `header`, `content` or children, `show`, `disabled` and `id`.
 
-Fields inside a closed item keep their values and are submitted, and an item opens when a field inside has an error. That holds with the HTML and shadcn adapters. With the Onu adapter, closed items are unmounted until [Javaabu/onu#60](https://github.com/Javaabu/onu/issues/60) lands, so put fields in `Tabs` or a fieldset instead.
+Fields inside a closed item keep their values and are submitted, and an item opens when a field inside has an error. That holds with every bundled adapter (HTML, shadcn and Onu).
 
 # Tabs and NavTabs
 

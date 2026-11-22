@@ -3,6 +3,9 @@
 import * as React from "react"
 import {
   Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
   ActionMenu,
   ApiSelect,
   Button,
@@ -94,7 +97,7 @@ import {
   type TabsSlotProps,
   type TextareaSlotProps,
 } from "../../core/adapter"
-import { TabPanel } from "../../core/reveal"
+import { TabPanel, useReveal } from "../../core/reveal"
 import { html } from "../html"
 import { parseDateValue, toDateString, toDateTimeString, toTimeString } from "../../support/dates"
 
@@ -478,12 +481,50 @@ function OnuCard({ title, subtitle, footer, imageTop, children, className }: Car
   )
 }
 
+/** Accordion content that opens its item when a field inside asks to be shown (`forms:reveal`). */
+function RevealArea({ onReveal, children }: { onReveal: () => void; children: React.ReactNode }) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  useReveal(ref, onReveal)
+  return (
+    <div ref={ref} className="contents">
+      {children}
+    </div>
+  )
+}
+
 function OnuAccordion({ id, items, defaultValue, multiple, className }: AccordionSlotProps) {
-  const list = items.map(({ value, title, content, disabled }) => ({ value, title, content, disabled }))
+  // Onu's `items` unmount closed content (https://github.com/Javaabu/onu/issues/60), so build the items
+  // from Onu's parts: force-mounted, so fields inside keep their values and submit, and hidden here.
+  const [open, setOpen] = React.useState<string[]>(defaultValue)
+  const reveal = (value: string) =>
+    setOpen((current) => (current.includes(value) ? current : multiple ? [...current, value] : [value]))
+  const content = items.map((item) => {
+    const closed = !open.includes(item.value)
+    return (
+      <AccordionItem key={item.value} value={item.value} id={item.id} disabled={item.disabled}>
+        <AccordionTrigger className="gap-2 touch:min-h-11">{item.title}</AccordionTrigger>
+        <AccordionContent forceMount hidden={closed}>
+          <div hidden={closed} data-state={closed ? "closed" : "open"}>
+            <RevealArea onReveal={() => reveal(item.value)}>{item.content}</RevealArea>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    )
+  })
   return multiple ? (
-    <Accordion id={id} type="multiple" defaultValue={defaultValue} items={list} className={className} />
+    <Accordion id={id} type="multiple" value={open} onValueChange={setOpen} className={className}>
+      {content}
+    </Accordion>
   ) : (
-    <Accordion id={id} type="single" defaultValue={defaultValue[0]} items={list} className={className} />
+    <Accordion
+      id={id}
+      type="single"
+      value={open[0] ?? ""}
+      onValueChange={(value: string) => setOpen(value ? [value] : [])}
+      className={className}
+    >
+      {content}
+    </Accordion>
   )
 }
 
