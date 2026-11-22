@@ -1,0 +1,47 @@
+name: Release
+
+# On every push to main, changesets/action either opens (or updates) a "Version Packages" PR that
+# applies the pending .changeset/*.md files (version bump + CHANGELOG.md), or, once that PR is
+# merged and no changesets are left, builds and publishes to npm and tags the release.
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write # push the version branch and the release tag
+  pull-requests: write # open the "Version Packages" PR
+  id-token: write # npm provenance
+
+jobs:
+  release:
+    name: Version or publish
+    runs-on: ubuntu-latest
+    if: github.repository == 'Javaabu/react-forms'
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - run: pnpm install --frozen-lockfile
+      # The same checks as CI: nothing is published from a broken main.
+      - run: pnpm check
+      - name: Version PR or publish
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          publish: pnpm release
+          commit: Version Packages
+          title: Version Packages
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
