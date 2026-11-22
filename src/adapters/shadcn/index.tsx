@@ -967,9 +967,26 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
       className,
       children,
     }: ModalSlotProps) {
+      // Without `DialogTrigger`, the adapter opens the dialog from the trigger's click itself.
+      const [own, setOwn] = React.useState(!!defaultOpen)
+      const setOpen = (next: boolean) => {
+        setOwn(next)
+        onOpenChange?.(next)
+      }
+      const triggerProps = trigger?.props as { onClick?: (e: React.MouseEvent) => void } | undefined
       return (
-        <Dialog open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
+        <Dialog
+          {...(DialogTrigger ? { open, defaultOpen, onOpenChange } : { open: open ?? own, onOpenChange: setOpen })}
+        >
           {trigger && DialogTrigger ? <DialogTrigger asChild>{trigger}</DialogTrigger> : null}
+          {trigger && !DialogTrigger
+            ? React.cloneElement(trigger as React.ReactElement<{ onClick?: (e: React.MouseEvent) => void }>, {
+                onClick: (event: React.MouseEvent) => {
+                  triggerProps?.onClick?.(event)
+                  setOpen(true)
+                },
+              })
+            : null}
           <DialogContent id={id} className={cx(WIDTHS[size], className)}>
             <DialogHeader>
               <DialogTitle className={title ? undefined : "sr-only"}>{title}</DialogTitle>

@@ -87,7 +87,8 @@ Tailwind must see the package's classes too: add `@source "../../node_modules/@j
 # Notes
 
 - Blade colours map to shadcn variants: `primary` → `default`, `danger` → `destructive`, `secondary`/`dark` → `secondary`, `light` and `outline-*` → `outline`, `link` → `link`. `Status` tones map to `Badge` variants.
-- Radix's select can't hold an empty value, so the placeholder shows instead; a select without search can't be cleared once picked. Use `Select2` (the combobox) when the field is optional and must be clearable.
+- Radix's select can't hold an empty value, so the placeholder shows instead. A clearable select without search (an optional one with a placeholder, or `clearable`) gets a Clear button beside the trigger.
+- `DialogTrigger` is optional: without it, the adapter opens the dialog from the `Modal`'s `trigger` itself.
 - Each radio is its own Radix group, so arrow keys don't move between radios of a group; `Tab` and `Space` do.
 - Thaana typing works on `Input` and `Textarea` with `thaana`.
 - `confirm` and `notify` (for file uploads) use `window.confirm` / `alert` unless you pass yours: `createShadcnAdapter(components, { notify: (message) => toast(message) })`, e.g. with sonner.

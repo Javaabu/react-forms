@@ -6,7 +6,7 @@ import { Select, Select2 } from "../../components/select"
 import { Status } from "../../components/display"
 import { Submit } from "../../components/buttons"
 import { Radio } from "../../components/checkbox"
-import { Accordion, AccordionItem } from "../../components/display"
+import { Accordion, AccordionItem, Modal } from "../../components/display"
 import { Text } from "../../components/inputs"
 import { FormsProvider } from "../../core/provider"
 import { testAdapter } from "../../testing"
@@ -139,5 +139,20 @@ describe("the shadcn adapter", () => {
     fireEvent.click(screen.getByRole("button", { name: "Clear" }))
     expect(data().get("status")).toBe("")
     expect(screen.queryByRole("button", { name: "Clear" })).toBeNull()
+  })
+
+  it("opens a modal from its trigger without DialogTrigger", () => {
+    const { DialogTrigger: _trigger, ...rest } = ui
+    const noTrigger = createShadcnAdapter(rest)
+    render(
+      <FormsProvider ui={noTrigger}>
+        <Modal id="confirm" title="ޔަޤީންތޯ؟" trigger={<button type="button">ހުޅުވާ</button>}>
+          <p>ތެރެ</p>
+        </Modal>
+      </FormsProvider>,
+    )
+    expect(screen.queryByText("ތެރެ")).toBeNull()
+    fireEvent.click(screen.getByRole("button", { name: "ހުޅުވާ" }))
+    expect(screen.getByRole("dialog")).toHaveTextContent("ތެރެ")
   })
 })
