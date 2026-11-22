@@ -32,7 +32,9 @@ function OnuMap({
     return (
       <MapPolygon
         {...props}
-        multiple={false}
+        // One boundary, as Blade's `Polygon` cast holds. A bound `MULTIPOLYGON` keeps every polygon
+        // editable (with one, Onu's editor only selects the first) and is saved back whole.
+        multiple={polygons.length > 1}
         value={toCollection(polygons)}
         onValueChange={(value) => onPolygonsChange(value ? value.features.map((f) => f.geometry.coordinates) : [])}
       />

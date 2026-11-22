@@ -40,6 +40,8 @@ const ui = mergeAdapters(onu, onuMaps)
 
 Without a map (the HTML and shadcn adapters, or Onu without `onuMaps`), `MapInput` shows only its latitude, longitude and radius fields, so people can still type coordinates. A boundary (`enablePolygon`) needs a map to draw; without one, only the bound value is submitted.
 
+A boundary is one polygon, submitted as `POLYGON((…))`, like Blade's `Polygon` cast. A bound `MULTIPOLYGON` keeps all its polygons: each can be edited on the map, and it is submitted as `MULTIPOLYGON(…)`. Onu's map draws outer rings only, so editing a polygon with holes drops the holes.
+
 # Values
 
 The point is read from `lat` / `lng` (or `latName` / `lngName`) on the bound model, or from a point at `name` (`{ lat, lng }`, `{ latitude, longitude }` or a GeoJSON `Point`). The radius is read from `radius`, and the boundary from `boundary` as WKT. Props (`lat`, `lng`, `radius`, `polygon`) win over the model, and `defaultLat`, `defaultLng`, `defaultRadius`, `defaultPolygon` apply when the model has no value.
