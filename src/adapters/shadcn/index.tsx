@@ -883,15 +883,22 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
       const [open, setOpen] = React.useState<string[]>(defaultValue)
       const reveal = (value: string) =>
         setOpen((current) => (current.includes(value) ? current : multiple ? [...current, value] : [value]))
-      const content = items.map((item) => (
-        <AccordionItem key={item.value} value={item.value} id={item.id} disabled={item.disabled}>
-          <AccordionTrigger>{item.title}</AccordionTrigger>
-          {/* Mounted while closed, so fields inside keep their values and submit. */}
-          <AccordionContent forceMount className="data-[state=closed]:hidden">
-            <RevealArea onReveal={() => reveal(item.value)}>{item.content}</RevealArea>
-          </AccordionContent>
-        </AccordionItem>
-      ))
+      const content = items.map((item) => {
+        const closed = !open.includes(item.value)
+        return (
+          <AccordionItem key={item.value} value={item.value} id={item.id} disabled={item.disabled}>
+            <AccordionTrigger>{item.title}</AccordionTrigger>
+            {/* Mounted while closed, so fields inside keep their values and submit. Radix doesn't hide
+                force-mounted content, so hide it here: `hidden` reaches Radix's element through the stock
+                component's props, and the wrapper hides the content whatever the component does with them. */}
+            <AccordionContent forceMount hidden={closed}>
+              <div hidden={closed} data-state={closed ? "closed" : "open"}>
+                <RevealArea onReveal={() => reveal(item.value)}>{item.content}</RevealArea>
+              </div>
+            </AccordionContent>
+          </AccordionItem>
+        )
+      })
       return multiple ? (
         <Accordion id={id} type="multiple" value={open} onValueChange={setOpen} className={className}>
           {content}

@@ -6,6 +6,8 @@ import { Select, Select2 } from "../../components/select"
 import { Status } from "../../components/display"
 import { Submit } from "../../components/buttons"
 import { Radio } from "../../components/checkbox"
+import { Accordion, AccordionItem } from "../../components/display"
+import { Text } from "../../components/inputs"
 import { FormsProvider } from "../../core/provider"
 import { testAdapter } from "../../testing"
 import { createShadcnAdapter } from "."
@@ -67,5 +69,30 @@ describe("the shadcn adapter", () => {
     fireEvent.click(container.querySelector('[role="radio"]')!)
     expect(states()).toEqual(["true", "false"])
     expect(new FormData(container.querySelector("form")!).getAll("kind")).toEqual([""])
+  })
+
+  it("hides closed accordion panels and keeps their fields in the form", () => {
+    const { container } = render(
+      <FormsProvider ui={shadcn}>
+        <Form>
+          <Accordion id="sections">
+            <AccordionItem name="first" title="ފުރަތަމަ" show>
+              <Text name="first" default="1" />
+            </AccordionItem>
+            <AccordionItem name="second" title="ދެވަނަ">
+              <Text name="second" default="ދެ" />
+            </AccordionItem>
+          </Accordion>
+        </Form>
+      </FormsProvider>,
+    )
+    const first = container.querySelector('input[name="first"]')!
+    const second = container.querySelector('input[name="second"]')!
+    expect(first.closest("[hidden]")).toBeNull()
+    expect(second.closest("[hidden]")).not.toBeNull()
+    expect(new FormData(container.querySelector("form")!).get("second")).toBe("ދެ")
+    fireEvent.click(screen.getByRole("button", { name: "ދެވަނަ" }))
+    expect(second.closest("[hidden]")).toBeNull()
+    expect(first.closest("[hidden]")).not.toBeNull()
   })
 })
