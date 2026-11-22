@@ -8,7 +8,8 @@ import { useSetting, useUi } from "../core/provider"
 import { useFormsTranslation } from "../core/strings"
 import { isNil } from "../support/data"
 import { parseWktPolygons, toWkt } from "../support/wkt"
-import { splitFieldProps, useField, type FieldProps } from "./field"
+import { useSyncedState } from "../support/use-synced-state"
+import { splitFieldProps, useField, useResetVersion, type FieldProps } from "./field"
 import { Hidden, Latitude, Longitude, Number as NumberField } from "./inputs"
 
 export interface MapInputProps extends Omit<FieldProps, "default"> {
@@ -116,10 +117,22 @@ export function MapInput(props: MapInputProps) {
   const unitFactor = radiusUnit === "km" ? 1000 : 1
   const initialRadius = radiusProp ?? boundRadius
 
-  const [point, setPoint] = React.useState<LatLng | null>(lat !== null && lng !== null ? { lat, lng } : null)
-  const [radius, setRadius] = React.useState<number | null>(initialRadius === null ? null : initialRadius * unitFactor)
-  const [polygons, setPolygons] = React.useState<number[][][][]>(() =>
-    parseWktPolygons(polygonProp ?? (typeof boundPolygon === "string" ? boundPolygon : null)),
+  const initialPolygon = polygonProp ?? (typeof boundPolygon === "string" ? boundPolygon : null)
+
+  // Each part starts from its resolved value and returns to it when that value changes (a model
+  // that loads later, new props) or the form resets.
+  const resetVersion = useResetVersion(field.name)
+  const [point, setPoint] = useSyncedState<LatLng | null>(
+    lat !== null && lng !== null ? { lat, lng } : null,
+    `${lat},${lng}:${resetVersion}`,
+  )
+  const [radius, setRadius] = useSyncedState<number | null>(
+    initialRadius === null ? null : initialRadius * unitFactor,
+    `${initialRadius},${unitFactor}:${resetVersion}`,
+  )
+  const [polygons, setPolygons] = useSyncedState<number[][][][]>(
+    parseWktPolygons(initialPolygon),
+    `${initialPolygon ?? ""}:${resetVersion}`,
   )
 
   const centerLat = defaultMapCenterLat ?? toNumber(settingLat)

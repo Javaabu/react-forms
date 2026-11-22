@@ -44,6 +44,8 @@ Without a map (the HTML and shadcn adapters, or Onu without `onuMaps`), `MapInpu
 
 The point is read from `lat` / `lng` (or `latName` / `lngName`) on the bound model, or from a point at `name` (`{ lat, lng }`, `{ latitude, longitude }` or a GeoJSON `Point`). The radius is read from `radius`, and the boundary from `boundary` as WKT. Props (`lat`, `lng`, `radius`, `polygon`) win over the model, and `defaultLat`, `defaultLng`, `defaultRadius`, `defaultPolygon` apply when the model has no value.
 
+When the model or these props change (a model that loads after the first render), the map and the fields move to the new values. A form reset returns them to the starting values; with a `resetOnSuccess` list, list the `MapInput`'s `name`.
+
 # Props
 
 | Prop | Type | Default | Description |
