@@ -504,7 +504,8 @@ export function createShadcnAdapter(c: ShadcnComponents, options: ShadcnAdapterO
       return (
         <RadioGroup
           name={name}
-          value={checked ? value : ""}
+          // `null` selects nothing, whatever the item's value: `""` would select an item whose value is `""`.
+          value={checked ? value : null}
           required={required}
           disabled={disabled}
           onValueChange={(v: string) => onCheckedChange(v === value)}

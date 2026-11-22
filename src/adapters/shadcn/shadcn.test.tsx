@@ -5,6 +5,7 @@ import { Form } from "../../components/form"
 import { Select, Select2 } from "../../components/select"
 import { Status } from "../../components/display"
 import { Submit } from "../../components/buttons"
+import { Radio } from "../../components/checkbox"
 import { FormsProvider } from "../../core/provider"
 import { testAdapter } from "../../testing"
 import { createShadcnAdapter } from "."
@@ -49,5 +50,22 @@ describe("the shadcn adapter", () => {
     fireEvent.click(screen.getByRole("combobox"))
     fireEvent.click(screen.getByText("މޫސުން"))
     expect(new FormData(container.querySelector("form")!).getAll("tags[]")).toEqual(["2"])
+  })
+
+  it("renders a radio whose value is empty as unchecked unless it is selected", () => {
+    const { container } = render(
+      <FormsProvider ui={shadcn}>
+        <Form>
+          <Radio name="kind" value="" label="ނެތް" />
+          <Radio name="kind" value="a" label="A" default />
+        </Form>
+      </FormsProvider>,
+    )
+    const states = () => [...container.querySelectorAll('[role="radio"]')].map((r) => r.getAttribute("aria-checked"))
+    expect(states()).toEqual(["false", "true"])
+    expect(new FormData(container.querySelector("form")!).getAll("kind")).toEqual(["a"])
+    fireEvent.click(container.querySelector('[role="radio"]')!)
+    expect(states()).toEqual(["true", "false"])
+    expect(new FormData(container.querySelector("form")!).getAll("kind")).toEqual([""])
   })
 })
