@@ -97,6 +97,7 @@ Only what differs; everything else in a component's props is in both.
 | Ids | From names: `address[city]` → `address-city`, `tags[]` → `tags`. Grouped checkboxes (`channels[]`) get the value appended: `channels-email`. |
 | Labels | From names: `first_name` → `First Name`, translated (`__()` / `trans()`). |
 | Multiple selects | Submit `name[]` and a `sync_<name>` hidden field (unless `excludeSyncField` or disabled). |
+| Cascading selects | A child keeps its saved value when the page loads, whichever of `child` (on the parent) or `parent` (on the child) links them and in whatever order they render. It loses a value that isn't in its new list when the parent changes, and its value when the parent is cleared. |
 | Relations | `relation`: a bound model becomes its key, a collection its keys. |
 | Errors | Bracket names map to dot keys (`items[0][name]` → `items.0.name`); array fields (`tags[]`) also show `tags.N` errors; the `default` bag unless `errorBag` / `bag`. |
 | Accessibility | Invalid controls get `aria-invalid="true"` and `aria-describedby` pointing at the help text and errors; the first invalid field is focused when errors arrive (`focusOnError`). |

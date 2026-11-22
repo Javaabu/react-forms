@@ -180,14 +180,24 @@ function SelectField({ select2, ...props }: Select2Props & { select2: boolean })
     initialOptions: staticOptions,
   })
 
-  // A cascade child whose parent changed loses a value that is no longer in its list.
+  // A cascade child whose parent changed loses a value that is no longer in its list. Until the
+  // parent has published itself its value is unknown (not empty), and its first known value is the
+  // one the saved selection belongs to, so neither clears anything.
+  const parentKey = JSON.stringify(watchedCascade.value ?? null)
+  const settledParent = React.useRef<string | undefined>(undefined)
   React.useEffect(() => {
-    if (!cascade.active || cascade.loading) return
+    if (!cascade.active || !watchedCascade.found) return
+    if (settledParent.current === undefined) {
+      settledParent.current = parentKey
+      return
+    }
+    if (settledParent.current === parentKey || cascade.loading) return
+    settledParent.current = parentKey
     const allowed = new Set(cascade.options.map((o) => o.value))
     const kept = selected.filter((v) => allowed.has(v))
     if (kept.length !== selected.length) setSelected(kept)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [cascade.options, cascade.loading, cascade.active])
+  }, [cascade.options, cascade.loading, cascade.active, watchedCascade.found, parentKey])
 
   // Dynamic URL (`ajaxChild`): the parent's value picks the URL, and a new URL clears the value.
   const urlKey = urlParent ? toFormString(watchedUrlParent.value) || undefined : selectedUrl
