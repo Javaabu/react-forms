@@ -117,6 +117,7 @@ Blade forms submit natively, so these have no Blade counterpart.
 | `useForm()` data | Every field writes to `form.data`, since `useForm` submits nothing else: value fields as they change, `File` the picked `File` (`File[]` with `multiple`, `null` when cleared), `Image` the picked image, `Hidden` its value (so a multi-select's `sync_<name>` too), and `MapInput` its latitude, longitude, radius and boundary. Controlled fields write their `value`. `FileUpload` / `ImageUpload` post on their own and stay out of the data. |
 | `useForm()` precedence | Data already in `form.data` wins over old input, the model and `default`, for value fields, checkboxes and radios alike. |
 | Controlled `Url` | The `https://` added on blur fires `onChange` as a native input event, so a controlled `value` and `useForm()` data follow. |
+| `Number` `decimals` | The value is rounded as it is typed, for `onValueChange` and `useForm()` data, and the input shows (and submits) the rounded value once it loses focus. Blade leaves rounding to js-utilities. |
 | `useForm()` transform | `Form` calls `form.transform()` only to add `_method` to a multipart `PUT` / `PATCH` / `DELETE` (`files`), so the page's own transform stays on every other form. |
 
 # Strings

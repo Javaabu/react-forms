@@ -204,7 +204,8 @@ function OnuNumber({ value, onValueChange, decimals, prepend, append, ...props }
       // Blade prints the raw number; keep it ungrouped with all its decimals.
       formatOptions={{ useGrouping: false, maximumFractionDigits: decimals ?? 10 }}
       value={value}
-      onValueChange={(n) => onValueChange(n ?? null)}
+      // Report (and so submit) the value rounded to `decimals`, as the other adapters do.
+      onValueChange={(n) => onValueChange(n == null ? null : decimals === undefined ? n : Number(n.toFixed(decimals)))}
     />
   )
 }

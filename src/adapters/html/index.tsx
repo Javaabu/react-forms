@@ -277,6 +277,10 @@ function NumberInput({ value, onValueChange, decimals, prepend, append, ...props
         {...props}
         step={props.step ?? (decimals !== undefined ? 1 / 10 ** decimals : "any")}
         value={state.text}
+        onBlur={() => {
+          // Show (and submit) the value that was reported, e.g. rounded to `decimals`.
+          setState((s) => ({ text: s.value === null ? "" : String(s.value), value: s.value }))
+        }}
         onChange={(event) => {
           const raw = event.target.value
           const n = raw === "" ? null : Number(raw)

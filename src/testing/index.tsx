@@ -190,6 +190,20 @@ export function adapterConformance(
       },
     },
     {
+      name: "Number submits the value rounded to decimals once it loses focus",
+      run: () => {
+        const { container } = mount(
+          <Form>
+            <NumberField name="lat" decimals={6} />
+          </Form>,
+        )
+        const input = screen.getByLabelText("Lat")
+        fireEvent.change(input, { target: { value: "1.23456789" } })
+        fireEvent.blur(input)
+        equal(formData(container).get("lat"), "1.234568", "submitted value")
+      },
+    },
+    {
       name: "Hidden submits its value",
       run: () => {
         const { container } = mount(

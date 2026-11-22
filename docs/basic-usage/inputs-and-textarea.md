@@ -51,7 +51,7 @@ export function CompanyForm({ company }) {
 | `Password` | `password` | Never pre-filled, and takes no `default`. |
 | `Tel` | `tel` | Left-to-right, `inputMode="tel"`. Submitted as typed. |
 | `Url` | `url` | Adds `https://` on blur when the scheme is missing, like js-utilities' `urlInput`, and reports it through `onChange`, so a controlled `value` follows. |
-| `Number` | `number` | Submits the raw number. Takes `min`, `max`, `step`, `decimals`, `prepend`, `append`, `value` / `onValueChange`. |
+| `Number` | `number` | Submits the raw number. Takes `min`, `max`, `step`, `decimals`, `prepend`, `append`, `value` / `onValueChange`. With `decimals`, the reported and submitted value is rounded; the typed text shows until the field loses focus. |
 | `Latitude`, `Longitude` | `latitude`, `longitude` | `Number` from -90 to 90 (or -180 to 180) with 6 decimals. |
 | `Hidden` | `hidden` | A hidden input with the same value precedence. An array value submits one `name[]` input per item. |
 | `Textarea` | `textarea` | `rows` (default `3`), `autoResize` (default `false`), `thaana`, `wysiwyg`. |

@@ -114,7 +114,7 @@ The source of the HTML adapter (`src/adapters/html/index.tsx`) is the reference:
 | `ErrorSummary` | `ErrorSummarySlotProps` | The error list at the top of a form. Call `onSelect(name)` from each entry |
 | `Input` | `InputSlotProps` | Text-like `<input>`s: `text`, `email`, `password`, `url`, `tel`, `search` |
 | `Textarea` | `TextareaSlotProps` | `<textarea>` |
-| `Number` | `NumberSlotProps` | A number input (`value: number \| null`) |
+| `Number` | `NumberSlotProps` | A number input (`value: number \| null`). Reports values rounded to `decimals`, and submits the reported value (show it once the input loses focus) |
 | `Checkbox`, `Radio` | `CheckboxSlotProps`, `RadioSlotProps` | One box or radio with its label beside it. `checked` may be `"indeterminate"` |
 | `Select` | `SelectSlotProps` | Single, multiple, searchable, creatable (tags) and server-searched (`remote`) selects. Without your own async select, use `useRemoteOptions(remote, query)` |
 | `Date` | `DateSlotProps` | Date, date-time and time pickers. `value` is the submitted string (`yyyy-MM-dd`, `yyyy-MM-dd HH:mm:ss`, `HH:mm`) |
