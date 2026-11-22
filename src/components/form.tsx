@@ -296,8 +296,9 @@ export function Form<T = FormValues>(props: FormProps<T>) {
   function submitUseForm(form: InertiaFormLike) {
     const url = resolved.url ?? (typeof window === "undefined" ? "" : window.location.href)
     // Laravel can't read multipart bodies of PUT / PATCH requests: send those as POST with `_method`.
+    // `useForm` keeps a single transform, so set one only when it's needed: the page's own stays otherwise.
     const viaPost = spoof && files
-    form.transform?.(((data: Record<string, unknown>) => (viaPost ? { ...data, _method: method } : data)) as never)
+    if (viaPost) form.transform?.(((data: Record<string, unknown>) => ({ ...data, _method: method })) as never)
     const submit = form.submit as unknown as (method: string, url: string, options: Record<string, unknown>) => void
     submit(viaPost ? "post" : method, url, {
       ...options,

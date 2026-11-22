@@ -84,7 +84,14 @@ export default function Create() {
 - `File` holds the picked `File` (`File[]` with `multiple`, `null` when cleared) and `Image` the picked image; `useForm` uploads them with `files`. `FileUpload` and `ImageUpload` post on their own, so they stay out of the data. A reset clears the picked file.
 - `Hidden` fields put their value in the data and keep it up to date, so a multi-select's `sync_<name>` field and `MapInput`'s hidden coordinates and boundary are submitted. A controlled field (`value`) writes its value too.
 - Editing a field clears its error with `form.clearErrors()`.
-- With `files`, a `PUT` / `PATCH` / `DELETE` is sent as `POST` with `_method` (through `form.transform()`).
+- With `files`, a `PUT` / `PATCH` / `DELETE` is sent as `POST` with `_method`, through `form.transform()`. `useForm` keeps a single transform and has no way to read it, so this one replaces your own. If you need your own transform on such a form, add `_method` in it yourself and set `method="post"`:
+
+  ```tsx
+  form.transform((data) => ({ ...data, slug: slugify(data.title), _method: "put" }))
+  <Form form={form} action={update(post)} method="post" files>…</Form>
+  ```
+
+  Every other form leaves `form.transform()` alone.
 
 Use `useForm()` when the page needs the data in code (live previews, computed fields). Otherwise the router is simpler.
 
