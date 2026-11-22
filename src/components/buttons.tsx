@@ -26,6 +26,15 @@ export function Button({ color = "primary", animate, type = "button", onClick, l
   // A click starts the spinner; any change of the form's status (submitting, error, …) resets it.
   const [clicked, setClicked] = useSyncedState(false, form?.status)
 
+  // A native submit that doesn't leave the page never changes the status. Coming back to the page
+  // from the back-forward cache shows it again with the spinner on, so reset it then.
+  React.useEffect(() => {
+    if (!clicked) return
+    const reset = () => setClicked(false)
+    window.addEventListener("pageshow", reset)
+    return () => window.removeEventListener("pageshow", reset)
+  }, [clicked, setClicked])
+
   return (
     <ui.Button
       {...props}
@@ -36,7 +45,19 @@ export function Button({ color = "primary", animate, type = "button", onClick, l
         onClick?.(event)
         if (!animate || event.defaultPrevented) return
         const owner = event.currentTarget.form
-        if (owner && owner.checkValidity()) setClicked(true)
+        if (!owner || !owner.checkValidity()) return
+        setClicked(true)
+        // A submit something else handled (`Form` with a router, `useForm` or `onSubmit`, or your own
+        // handler) isn't a page load: the form's processing state drives the spinner from here.
+        // React's handlers run after this listener, so look once the event is done.
+        owner.addEventListener(
+          "submit",
+          (submit) =>
+            setTimeout(() => {
+              if (submit.defaultPrevented) setClicked(false)
+            }),
+          { once: true },
+        )
       }}
     />
   )

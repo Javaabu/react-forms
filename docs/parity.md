@@ -118,6 +118,7 @@ Blade forms submit natively, so these have no Blade counterpart.
 | `useForm()` precedence | Data already in `form.data` wins over old input, the model and `default`, for value fields, checkboxes and radios alike. |
 | Controlled `Url` | The `https://` added on blur fires `onChange` as a native input event, so a controlled `value` and `useForm()` data follow. |
 | `Number` `decimals` | The value is rounded as it is typed, for `onValueChange` and `useForm()` data, and the input shows (and submits) the rounded value once it loses focus. Blade leaves rounding to js-utilities. |
+| `Submit` spinner | Stops when the page is shown again from the back-forward cache (`pageshow`) and when a handler prevented the submit, so the button doesn't stay busy. |
 | `useForm()` transform | `Form` calls `form.transform()` only to add `_method` to a multipart `PUT` / `PATCH` / `DELETE` (`files`), so the page's own transform stays on every other form. |
 
 # Strings

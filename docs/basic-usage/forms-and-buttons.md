@@ -108,7 +108,7 @@ import { Button, ButtonGroup, LinkButton, Submit } from "@javaabu/forms"
 | Component | Blade | Props |
 | --- | --- | --- |
 | `Button` | `button` | `color` (default `primary`), `size` (`sm`, `md`, `lg`, `icon`), `type` (default `button`), `loading`, `startIcon`, `endIcon`, `animate`, and `<button>` attributes. |
-| `Submit` | `submit` | `Button` with `type="submit"` and `animate`: a spinner on a valid submit and while the form processes (js-utilities' `animate-submit`). |
+| `Submit` | `submit` | `Button` with `type="submit"` and `animate`: a spinner on a valid submit and while the form processes (js-utilities' `animate-submit`). After a native submit the spinner stays until the page changes; it stops when the browser shows the page again from its back-forward cache, and when a handler prevented the submit. |
 | `LinkButton` | `link-button` | `url`, `color`, `size`, `disabled`, `startIcon`, `endIcon`, and `<a>` attributes. |
 | `ButtonGroup` | `button-group` | `inline` (default `true`; `false` stacks the buttons). |
 
