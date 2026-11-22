@@ -28,7 +28,8 @@ export function toThaana(text: string): string {
 type TextControl = HTMLInputElement | HTMLTextAreaElement
 
 /** Sets a control's value so React's `onChange` sees it, as if the user typed it. */
-function setNativeValue(el: TextControl, value: string) {
+/** Sets a text control's value as typing would, so React's `onChange` fires. */
+export function setNativeValue(el: TextControl, value: string) {
   const proto = el instanceof HTMLTextAreaElement ? HTMLTextAreaElement.prototype : HTMLInputElement.prototype
   Object.getOwnPropertyDescriptor(proto, "value")?.set?.call(el, value)
   el.dispatchEvent(new Event("input", { bubbles: true }))

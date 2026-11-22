@@ -5,6 +5,7 @@ import * as React from "react"
 import { useFieldValue } from "../core/binding"
 import { useUi } from "../core/provider"
 import { useFlagFor, usePublishField } from "../core/registry"
+import { setNativeValue } from "../core/thaana"
 import { isNil, toFormString } from "../support/data"
 import { nameToId } from "../support/str"
 import {
@@ -126,8 +127,14 @@ function TextLikeField(props: InputProps) {
         onChange?.(event)
       }}
       onBlur={(event) => {
-        // js-utilities' `urlInput`: add the scheme when it is missing.
-        if (type === "url" && current && !/^[a-z][a-z\d+.-]*:/i.test(current)) setCurrent(`https://${current}`)
+        // js-utilities' `urlInput`: add the scheme when it is missing. As a native input event, so
+        // `onChange` reports it and a controlled `value` follows.
+        if (type === "url" && current && !/^[a-z][a-z\d+.-]*:/i.test(current)) {
+          const next = `https://${current}`
+          const target = event.target as unknown
+          if (target instanceof HTMLInputElement) setNativeValue(target, next)
+          else setCurrent(next)
+        }
         inputProps.onBlur?.(event)
       }}
     />
