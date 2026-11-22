@@ -89,7 +89,10 @@ describe("fields that write to a useForm() store", () => {
 
   it("leaves upload inputs out of the store", async () => {
     const { container, latest } = renderWithUseForm({}, <FileField name="doc" upload onUploaded={() => {}} />)
-    vi.stubGlobal("fetch", vi.fn(async () => new Response("{}")))
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response("{}")),
+    )
     const file = new globalThis.File(["x"], "a.pdf", { type: "application/pdf" })
     fireEvent.change(container.querySelector('input[type="file"]')!, { target: { files: [file] } })
     await act(async () => {})
