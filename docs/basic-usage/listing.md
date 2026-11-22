@@ -68,7 +68,7 @@ export default function Index({ users, query }) {
 - **Selection** (js-utilities' `selectAllCheckbox`). Row checkboxes submit `<model>[]` with the row's `id` (or `modelId`). The header checkbox selects every row, and shows a mixed state for a partial selection.
 - **Sorting** (`sortable` on a heading, or `name`). A sortable heading sets `orderby` and `order` on the form with id `filterId` (default `filter`) and submits it. Without that form, it changes the URL. The current sort comes from the URL. `Filter` adds the hidden `orderby` and `order` fields.
 - **Bulk actions.** With `bulkForm`, the table sits inside a form that posts to `bulkFormAction`. `BulkActions` adds the `action` select, an Apply button and a `redirect` field with the current URL.
-- **Export.** `FilterSubmit export` adds an Export button that submits `download=<key>`: `true` (value `1`), a format, a list, or a format → label object for a menu.
+- **Export.** `FilterSubmit export` adds an Export button that submits `download=<key>`: `true` (value `1`), a format (`"csv"`), a list of formats (`["csv", "xlsx"]`, each its own value), or a format → label object for a menu.
 - **Per page.** `PerPage` is a `per_page` select. Its value comes from `perPage`, the URL, or the `per_page` setting (`FormsProvider settings`).
 - **Search.** `SearchForm` is a GET form with one search field (`name`, default `search`); its value comes from the URL.
 - **Empty state.** `NoItems` shows "It's a bit lonely here." and a Create New button. The button shows when `showCreate` is true, or when `FormsProvider authorize("create", model)` allows it.

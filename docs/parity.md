@@ -76,6 +76,7 @@ Only what differs; everything else in a component's props is in both.
 | `Wysiwyg` | — | `rows` | The React editor sizes itself. |
 | `ConditionalWrapper` | — | `json-encode` | How Blade writes the value into a `data-` attribute. |
 | `Label` | `children` for content | `blank-label`, `inline`, `inline-label-class` | React's `FormGroup blankLabel` covers the blank label. |
+| `FilterSubmit` | ≠ `export="csv"` and `export={["csv", "xlsx"]}` submit the format (`download=csv`) | ≠ a string or PHP list submits its index (`download=0`) | React submits what the controller needs to pick the format; an associative array (`['xlsx' => 'Excel']`) submits its key in both. |
 | `TableHeading` | — | `colspan` | Plain `colSpan` in React. |
 | `TabsPane` | — | `active`, `labelled-by` | React sets the active tab on `Tabs`, and generates the ids. |
 | `AccordionItem` | `header` | `parent` | React items know their accordion. |

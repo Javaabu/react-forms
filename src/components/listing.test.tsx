@@ -171,6 +171,16 @@ describe("filters", () => {
     expect(screen.getByLabelText("Per page")).toHaveValue("50")
   })
 
+  it("submits the format of a list of exports", () => {
+    render(
+      <Form>
+        <FilterSubmit cancelUrl="/users" export={["csv", "xlsx"]} />
+      </Form>,
+    )
+    expect(screen.getByRole("button", { name: "Export" })).toHaveAttribute("value", "csv")
+    expect(screen.getByRole("menuitem", { name: "xlsx" })).toBeInTheDocument()
+  })
+
   it("renders a single export button and a search form", () => {
     render(
       <>

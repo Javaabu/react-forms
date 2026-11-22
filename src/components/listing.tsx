@@ -485,8 +485,8 @@ export interface FilterSubmitProps {
   /** URL of the "Clear" link. */
   cancelUrl: string
   /**
-   * Export button(s), submitted as `download`: `true` (value `1`), a format, or a
-   * format → label object for an export menu.
+   * Export button(s), submitted as `download`: `true` (value `1`), a format, a list of
+   * formats, or a format → label object for an export menu. A format is its own value.
    */
   export?: boolean | string | string[] | Record<string, string>
   /** Before the Filter button. */
@@ -513,7 +513,7 @@ export function FilterSubmit({
     typeof exportProp === "string"
       ? { [exportProp]: exportProp }
       : Array.isArray(exportProp)
-        ? Object.fromEntries(exportProp.map((e, i) => [String(i), e]))
+        ? Object.fromEntries(exportProp.map((format) => [format, format]))
         : exportProp && typeof exportProp === "object"
           ? exportProp
           : null

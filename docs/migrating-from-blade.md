@@ -61,6 +61,7 @@ Attributes become camelCase props (`show-label` → `showLabel`, `:options="$x"`
 - **Radios** are selected when the bound value equals their `value`. Blade v1 checked every radio of a group for a truthy scalar, so the last one won.
 - **Grouped checkboxes** (`name="channels[]"`) get unique ids (`channels-email`) without an explicit `id`.
 - **Dates** are submitted as `yyyy-MM-dd`, `yyyy-MM-dd HH:mm:ss` and `HH:mm`. The picker comes from the adapter, so `dateFormat`, `icon`, `clearIcon` and `clearBtnClass` don't apply. Blade formats bound dates on the server in the app's time zone; the browser doesn't know it, so set the `app_timezone` setting (`config('app.timezone')`) for zone-aware values such as Laravel's JSON for date casts. See [Dates](./basic-usage/dates#values).
+- **`FilterSubmit export`** with a format or a list of formats submits the format (`download=csv`); Blade submits the list index (`download=0`). An associative array (`['xlsx' => 'Excel']`) submits its key in both.
 - **Passwords** never take a `default`: they are never pre-filled.
 - **`Tabs` with `url`** navigate with `window.location`. For router links use `NavTabs` with the `inertiaLinks` adapter.
 - **Text entries** render enums serialized as `{ value, label }` (with `color`, a status badge), booleans as Yes / No, arrays as lists. HTML in `admin_link` is not rendered; pass children instead.
