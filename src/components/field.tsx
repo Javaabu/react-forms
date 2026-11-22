@@ -212,26 +212,55 @@ export interface FieldStateOptions<T> {
   store?: boolean
 }
 
+/** The surrounding form's reset version as it applies to the field `name`. */
+export function useResetVersion(name: string): number {
+  const form = useFormState()
+  const resets = !form || !form.resetNames || form.resetNames.includes(name)
+  return resets ? (form?.resetVersion ?? 0) : 0
+}
+
+/**
+ * Writes `value` to the form's external store (Inertia `useForm` data) on mount
+ * and whenever it changes, unless the store already holds it. For fields whose
+ * value comes from props (`Hidden`, controlled fields) rather than from typing.
+ */
+export function useSyncToStore(name: string, value: unknown, enabled = true) {
+  const store = useFormValues()
+  const key = JSON.stringify(value ?? null)
+  React.useEffect(() => {
+    if (!enabled || !store || !name) return
+    if (store.has(name) && JSON.stringify(store.get(name) ?? null) === key) return
+    store.set(name, value)
+    // Only a new value writes: a store that changed on its own keeps what it holds until then.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [name, key, enabled, !!store])
+}
+
 /**
  * A field's value. In order: the user's `value` prop, the form's external
  * store (Inertia `useForm` data) when it has the field, or the field's own state,
  * starting at `initial` (old input → model → default) and returning to it on a reset.
+ * A controlled value is written to the store too, so `useForm` submits what is shown.
  */
 export function useFieldState<T>(name: string, initial: T, options: FieldStateOptions<T> = {}) {
   const external = useFormValues()
   const store = options.store === false ? null : external
   const form = useFormState()
-  const resets = !form || !form.resetNames || form.resetNames.includes(name)
-  const resetVersion = resets ? (form?.resetVersion ?? 0) : 0
+  const resetVersion = useResetVersion(name)
   const [own, setOwn] = useSyncedState(initial, `${String(options.key ?? JSON.stringify(initial))}:${resetVersion}`)
   const inStore = !!store && store.has(name)
   const stored = inStore ? (options.fromStore ? options.fromStore(store.get(name)) : (store.get(name) as T)) : own
+  const controlled = options.controlled !== undefined
+  const toStore = (value: T) => (options.toStore ? options.toStore(value) : value)
 
   // A store submits only what it holds, so give it the starting value of fields it doesn't know yet.
   React.useEffect(() => {
-    if (store && name && !store.has(name)) store.set(name, options.toStore ? options.toStore(initial) : initial)
+    if (store && name && !store.has(name)) store.set(name, toStore(controlled ? options.controlled! : initial))
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [store, name])
+
+  // A controlled value that changes (a map click moving `Latitude`) goes to the store as well.
+  useSyncToStore(name, controlled ? toStore(options.controlled!) : undefined, controlled && !!store)
 
   const set = React.useCallback(
     (next: T) => {
@@ -243,5 +272,5 @@ export function useFieldState<T>(name: string, initial: T, options: FieldStateOp
     [store, name, form?.clearErrors, setOwn],
   )
 
-  return [options.controlled !== undefined ? options.controlled : stored, set] as const
+  return [controlled ? options.controlled! : stored, set] as const
 }

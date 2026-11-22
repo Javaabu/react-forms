@@ -7,7 +7,14 @@ import { useUi } from "../core/provider"
 import { useFlagFor, usePublishField } from "../core/registry"
 import { isNil, toFormString } from "../support/data"
 import { nameToId } from "../support/str"
-import { splitFieldProps, useField, useFieldState, type FieldProps, type PlaceholderProps } from "./field"
+import {
+  splitFieldProps,
+  useField,
+  useFieldState,
+  useSyncToStore,
+  type FieldProps,
+  type PlaceholderProps,
+} from "./field"
 
 type NativeInputProps = Omit<
   React.ComponentProps<"input">,
@@ -248,6 +255,8 @@ export function Hidden({ name, id, model, default: defaultValue, value, disabled
         : toFormString(fieldValue)
 
   usePublishField({ id, name, kind: "value", value: resolved, disabled })
+  // `useForm` submits only its data, so the store gets the value too (a disabled input submits nothing).
+  useSyncToStore(name, resolved, !disabled)
 
   if (Array.isArray(resolved)) {
     const inputName = name.endsWith("[]") ? name : `${name}[]`

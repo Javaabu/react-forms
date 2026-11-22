@@ -81,6 +81,8 @@ export default function Create() {
 
 - A field that isn't in `form.data` yet starts from the model, old input or `default`, and is added to the data.
 - Checkbox groups (`channels[]`) hold an array of the checked values, a single checkbox its value or `false`, and radios the selected value.
+- `File` holds the picked `File` (`File[]` with `multiple`, `null` when cleared) and `Image` the picked image; `useForm` uploads them with `files`. `FileUpload` and `ImageUpload` post on their own, so they stay out of the data. A reset clears the picked file.
+- `Hidden` fields put their value in the data and keep it up to date, so a multi-select's `sync_<name>` field and `MapInput`'s hidden coordinates and boundary are submitted. A controlled field (`value`) writes its value too.
 - Editing a field clears its error with `form.clearErrors()`.
 - With `files`, a `PUT` / `PATCH` / `DELETE` is sent as `POST` with `_method` (through `form.transform()`).
 

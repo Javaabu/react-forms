@@ -106,6 +106,14 @@ Only what differs; everything else in a component's props is in both.
 | Formatted values | Enums (`{ value, label }`) show their label (a status badge with `color`), booleans Yes / No, empty values `-`, arrays a list (text entries) or joined with `table_array_separator` (table cells). |
 | Button colours | Bootstrap names (`primary`, `danger`, `outline-secondary`, …) in both; each React adapter maps them to its variants. |
 
+# React-only behaviour ⚛️
+
+Blade forms submit natively, so these have no Blade counterpart.
+
+| Behaviour | React |
+| --- | --- |
+| `useForm()` data | Every field writes to `form.data`, since `useForm` submits nothing else: value fields as they change, `File` the picked `File` (`File[]` with `multiple`, `null` when cleared), `Image` the picked image, `Hidden` its value (so a multi-select's `sync_<name>` too), and `MapInput` its latitude, longitude, radius and boundary. Controlled fields write their `value`. `FileUpload` / `ImageUpload` post on their own and stay out of the data. |
+
 # Strings
 
 Both packages read the same keys, `forms::strings.<key>`, so an app's `lang/vendor/forms/{locale}/strings.php` changes Blade and React alike. See [Translations](./basic-usage/translations) for every key with its English and Dhivehi line.

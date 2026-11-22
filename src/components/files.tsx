@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useBindTarget } from "../core/binding"
 import { readValidationErrors } from "../core/errors"
-import { useFormState } from "../core/form-context"
+import { useFormState, useFormValues } from "../core/form-context"
 import { useCsrfToken, useFormsConfig, useFormsServices, useUi } from "../core/provider"
 import { usePublishField } from "../core/registry"
 import { useFormsTranslation } from "../core/strings"
@@ -12,7 +12,7 @@ import { mediaUrl, resolveBoundMedia, type ResolvedFile } from "../support/media
 import { formatFileSize, getAllowedMimeTypes, getExtensions, getMaxFileSize } from "../support/mime-types"
 import { bracketsToDots } from "../support/str"
 import { submitFieldToForm } from "../support/upload"
-import { splitFieldProps, useField, type FieldProps } from "./field"
+import { splitFieldProps, useField, useResetVersion, type FieldProps } from "./field"
 import { useSyncedState } from "../support/use-synced-state"
 
 export interface FileProps extends FieldProps {
@@ -163,7 +163,10 @@ function FileComponent(props: FileProps) {
   const f = useField({ ...field, help })
   const existing = useExistingFile({ ...field, collection, conversion, ignoreAccessor })
   const { anchor, busy, upload: uploadFile, remove: removeFile } = useFormUpload(field.name, onUploaded)
-  const [picked, setPicked] = React.useState(false)
+  const store = useFormValues()
+  // A reset remounts the input, which clears the picked file.
+  const resetVersion = useResetVersion(field.name)
+  const [picked, setPicked] = useSyncedState(false, resetVersion)
 
   usePublishField({
     id: f.id,
@@ -179,6 +182,7 @@ function FileComponent(props: FileProps) {
       {existing ? <ExistingFile file={existing} /> : null}
       <span className="gap-2 flex items-start">
         <ui.File
+          key={resetVersion}
           {...f.control}
           // An uploading input posts on its own, so it must not be part of the form's submit.
           name={upload ? "" : field.name}
@@ -195,7 +199,12 @@ function FileComponent(props: FileProps) {
           onFilesChange={(files) => {
             setPicked(files.length > 0)
             onChange?.(files)
-            if (upload && files[0]) void uploadFile(files[0])
+            if (upload) {
+              if (files[0]) void uploadFile(files[0])
+            } else if (store) {
+              // `useForm` submits only its data, so the picked file(s) go there.
+              store.set(field.name, multiple ? files : (files[0] ?? null))
+            }
           }}
         />
         {upload && existing && !f.disabled ? (
@@ -298,7 +307,12 @@ function ImageComponent(props: ImageProps) {
   const f = useField({ ...field, help })
   const existing = useExistingFile({ ...field, collection, conversion, ignoreAccessor })
   const { anchor, busy, upload: uploadFile, remove: removeFile } = useFormUpload(field.name, onUploaded)
-  const [value, setValue] = useSyncedState<File | string | null>(existing?.url ?? null)
+  const store = useFormValues()
+  const resetVersion = useResetVersion(field.name)
+  const [value, setValue] = useSyncedState<File | string | null>(
+    existing?.url ?? null,
+    `${existing?.url ?? ""}:${resetVersion}`,
+  )
 
   usePublishField({
     id: f.id,
@@ -316,6 +330,7 @@ function ImageComponent(props: ImageProps) {
   return f.wrap(
     <span ref={anchor} className="contents">
       <ui.Image
+        key={resetVersion}
         {...f.control}
         name={upload ? "" : field.name}
         disabled={f.disabled || !!busy || undefined}
@@ -333,6 +348,8 @@ function ImageComponent(props: ImageProps) {
           onChange?.(file)
           if (!upload) {
             setValue(file)
+            // `useForm` submits only its data, so the picked image goes there.
+            store?.set(field.name, file)
             return
           }
           if (file) {
