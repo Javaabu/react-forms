@@ -11,6 +11,7 @@ import { Wysiwyg } from "../../components/wysiwyg"
 import { Icon } from "../../components/icon"
 import { LinkButton, Submit } from "../../components/buttons"
 import { FormsProvider } from "../../core/provider"
+import { resolveIconName } from "../../core/adapter"
 import { pageWindow } from "."
 
 function data(container: HTMLElement) {
@@ -270,5 +271,17 @@ describe("file uploads", () => {
     expect(screen.getByRole("img")).toHaveAttribute("src", "blob:preview")
     fireEvent.click(screen.getByText("Remove"))
     expect(screen.queryByRole("img")).not.toBeInTheDocument()
+  })
+})
+
+describe("icon names", () => {
+  it("draws names of Object.prototype members as icon font classes", () => {
+    expect(resolveIconName("constructor")).toBeNull()
+    expect(resolveIconName("toString")).toBeNull()
+    expect(resolveIconName("close")).toBe("x")
+    const { container } = render(<Icon name="constructor" />)
+    const icon = container.querySelector("[data-slot=icon]")!
+    expect(icon.tagName).toBe("I")
+    expect(icon).toHaveClass("constructor")
   })
 })

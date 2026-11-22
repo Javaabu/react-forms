@@ -72,7 +72,7 @@ export type IconName = BundledIconName | keyof typeof ICON_ALIASES | (string & {
 
 /** The bundled icon a name draws, or `null` for icon font classes. */
 export function resolveIconName(name: IconName): BundledIconName | null {
-  if (name in ICON_ALIASES) return ICON_ALIASES[name as keyof typeof ICON_ALIASES]
+  if (Object.hasOwn(ICON_ALIASES, name)) return ICON_ALIASES[name as keyof typeof ICON_ALIASES]
   return (BUNDLED_ICONS as readonly string[]).includes(name) ? (name as BundledIconName) : null
 }
 
