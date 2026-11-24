@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@javaabu/i18n':
-        specifier: github:Javaabu/i18n#build-on-git-install
-        version: https://codeload.github.com/Javaabu/i18n/tar.gz/76730212d6f0f1d87a78635ed6e005dd5713cbba(react@19.3.1)
+        specifier: ^0.1.0
+        version: 0.1.0(react@19.3.1)
     devDependencies:
       '@changesets/cli':
         specifier: ^3.0.3
@@ -503,9 +503,8 @@ packages:
   '@internationalized/string@3.2.10':
     resolution: {integrity: sha512-PDx6//vHSpRnHfxqMqto11zQvhsaU74O3mKv2F/0eicGZcl9NLjQmGlbHz/LsJh5tLKp4A4L7ZVTzN1/MmMTvA==}
 
-  '@javaabu/i18n@https://codeload.github.com/Javaabu/i18n/tar.gz/76730212d6f0f1d87a78635ed6e005dd5713cbba':
-    resolution: {tarball: https://codeload.github.com/Javaabu/i18n/tar.gz/76730212d6f0f1d87a78635ed6e005dd5713cbba}
-    version: 0.0.0
+  '@javaabu/i18n@0.1.0':
+    resolution: {integrity: sha512-Mfar10Jt/kNQnB2xjgQeDVjg+t8NAZotohUVYnU6U36WufsKbhoqDzlI9bQaygapbXha9HaU4K4W+Uj+KPsmnw==}
     engines: {node: '>=20.19'}
     peerDependencies:
       react: ^18.0.0 || ^19.0.0
@@ -3618,7 +3617,7 @@ snapshots:
     dependencies:
       '@swc/helpers': 0.5.23
 
-  '@javaabu/i18n@https://codeload.github.com/Javaabu/i18n/tar.gz/76730212d6f0f1d87a78635ed6e005dd5713cbba(react@19.3.1)':
+  '@javaabu/i18n@0.1.0(react@19.3.1)':
     optionalDependencies:
       react: 19.3.1
 

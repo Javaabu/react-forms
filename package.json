@@ -179,7 +179,7 @@
     ]
   },
   "dependencies": {
-    "@javaabu/i18n": "github:Javaabu/i18n#build-on-git-install"
+    "@javaabu/i18n": "^0.1.0"
   },
   "unpkg": "./dist/forms.iife.js",
   "jsdelivr": "./dist/forms.iife.js"
