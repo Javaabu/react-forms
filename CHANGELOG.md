@@ -1,5 +1,11 @@
 # @javaabu/forms
 
+## 0.1.1
+
+### Patch Changes
+
+- d1ffd73: Depend on `@javaabu/i18n` from npm instead of GitHub.
+
 ## 0.1.0
 
 ### Minor Changes
